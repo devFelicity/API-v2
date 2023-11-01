@@ -9,19 +9,27 @@ using DotNetBungieAPI.Service.Abstractions;
 using Marvin.DefinitionProvider.Postgresql.Models;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+// ReSharper disable MemberCanBeMadeStatic.Local
+
+// ReSharper disable ClassNeverInstantiated.Global
+#pragma warning disable IDE0052
+#pragma warning disable CA1816
+#pragma warning disable CA1822
 
 namespace Marvin.DefinitionProvider.Postgresql;
 
 public class PostgresqlDefinitionProvider : IDefinitionProvider
 {
-    private readonly IBungieClientConfiguration _bungieClientConfiguration;
-    private readonly IDotNetBungieApiHttpClient _dotNetBungieApiHttpClient;
-    private readonly PostgresqlDefinitionProviderConfiguration _configuration;
     private readonly IBungieApiAccess _bungieApiAccess;
+    private readonly IBungieClientConfiguration _bungieClientConfiguration;
     private readonly IBungieNetJsonSerializer _bungieNetJsonSerializer;
+    private readonly PostgresqlDefinitionProviderConfiguration _configuration;
     private readonly IDefinitionAssemblyData _definitionAssemblyData;
+    private readonly IDotNetBungieApiHttpClient _dotNetBungieApiHttpClient;
+
+    // ReSharper disable once NotAccessedField.Local
     private readonly ILogger<PostgresqlDefinitionProvider> _logger;
-    
+
     private DestinyManifest? _currentLoadedManifest;
 
     public PostgresqlDefinitionProvider(
@@ -44,7 +52,6 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
     public void Dispose()
     {
-        return;
     }
 
     public ValueTask DisposeAsync()
@@ -57,9 +64,9 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
         await using var postgreDbConnection = new NpgsqlConnection(_configuration.ConnectionString);
         await postgreDbConnection.OpenAsync();
         var reader = await QueryAsync(
-            postgreDbConnection, 
+            postgreDbConnection,
             PostgresqlQueries.GetDefinition,
-            (parameters) =>
+            parameters =>
             {
                 parameters.AddWithValue("Hash", hash.ToString());
                 parameters.AddWithValue("DefType", DefinitionHashPointer<T>.EnumValue.ToStringFast());
@@ -67,13 +74,11 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
                 parameters.AddWithValue("Lang", locale.AsString());
             });
 
-        if (await reader.ReadAsync())
-        {
-            var rawValue = await reader.GetFieldValueAsync<byte[]>(0);
-            return await _bungieNetJsonSerializer.DeserializeAsync<T>(rawValue);
-        }
+        if (!await reader.ReadAsync())
+            throw new Exception("Failed to load definition from db");
 
-        throw new Exception("Failed to load definition from db");
+        var rawValue = await reader.GetFieldValueAsync<byte[]>(0);
+        return await _bungieNetJsonSerializer.DeserializeAsync<T>(rawValue);
     }
 
     public ValueTask<DestinyHistoricalStatsDefinition> LoadHistoricalStatsDefinition(string id, BungieLocales locale)
@@ -111,7 +116,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
         var loadedVersions = await GetAvailableManifestVersionsFromDbAsync();
 
-        return !loadedVersions.Any(x => x.Version == manifest.Response.Version);
+        return loadedVersions.All(x => x.Version != manifest.Response.Version);
     }
 
     public async Task Update()
@@ -122,20 +127,14 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
             var manifest = await _bungieApiAccess.Destiny2.GetDestinyManifest();
             await DownloadAndStoreLatestManifest(manifest.Response);
             _currentLoadedManifest = manifest.Response;
-            if (_configuration.CleanUpOldManifestsAfterUpdate)
-            {
-                await DeleteOldManifestData();
-            }
+            if (_configuration.CleanUpOldManifestsAfterUpdate) await DeleteOldManifestData();
         }
     }
 
     public async Task DeleteOldManifestData()
     {
         var availableManifests = await GetAvailableManifestVersionsFromDbAsync();
-        if (availableManifests.Count <= 1)
-        {
-            return;
-        }
+        if (availableManifests.Count <= 1) return;
 
         var orderedManifests = availableManifests
             .OrderByDescending(x => x.DownloadDate)
@@ -143,13 +142,9 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
         var untouchedManifests = orderedManifests.Take(_configuration.MaxAmountOfLeftoverManifests).ToList();
 
-        foreach (var manifest in availableManifests)
-        {
-            if (!untouchedManifests.Any(x => x.Version == manifest.Version))
-            {
-                await DeleteManifestData(manifest.Version);
-            }
-        }
+        foreach (var manifest in availableManifests.Where(manifest =>
+                     untouchedManifests.All(x => x.Version != manifest.Version)))
+            await DeleteManifestData(manifest.Version);
     }
 
     public async Task DeleteManifestData(string version)
@@ -159,12 +154,12 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
         await ExecuteQueryAsync(
             postgreDbConnection,
             PostgresqlQueries.DeleteManifestVersion,
-            (parameters) => { parameters.AddWithValue("Version", version); });
+            parameters => { parameters.AddWithValue("Version", version); });
 
         await ExecuteQueryAsync(
             postgreDbConnection,
             PostgresqlQueries.DeleteManifestFiles,
-            (parameters) => { parameters.AddWithValue("Version", version); });
+            parameters => { parameters.AddWithValue("Version", version); });
     }
 
     public async ValueTask<bool> CheckExistingManifestData(string version)
@@ -174,7 +169,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
         var reader = await QueryAsync(
             postgreDbConnection,
             PostgresqlQueries.CheckIfManifestExists,
-            (parameters) => { parameters.AddWithValue("Version", version); });
+            parameters => { parameters.AddWithValue("Version", version); });
 
         // If there's entry, manifest is there
         return await reader.NextResultAsync();
@@ -192,10 +187,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
         _currentLoadedManifest = latestManifest.Response;
 
-        if (_configuration.AutoUpdateOnStartup)
-        {
-            await Update();
-        }
+        if (_configuration.AutoUpdateOnStartup) await Update();
     }
 
     public Task ChangeManifestVersion(string version)
@@ -205,10 +197,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
     public async ValueTask ReadToRepository(IDestiny2DefinitionRepository repository)
     {
-        if (_currentLoadedManifest is null)
-        {
-            throw new Exception("Load manifest first");
-        }
+        if (_currentLoadedManifest is null) throw new Exception("Load manifest first");
 
         await using var postgreDbConnection = new NpgsqlConnection(_configuration.ConnectionString);
         await postgreDbConnection.OpenAsync();
@@ -217,7 +206,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
             var reader = await QueryAsync(
                 postgreDbConnection,
                 PostgresqlQueries.BulkGetDefinitions,
-                (parameters) =>
+                parameters =>
                 {
                     parameters.AddWithValue("Lang", locale.AsString());
                     parameters.AddWithValue("ManifestVersion", _currentLoadedManifest.Version);
@@ -236,7 +225,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
                     var property = definitionEnumerator.Current;
                     var rawDefinition = property.Value.GetRawText();
                     var definition = _bungieNetJsonSerializer.Deserialize(rawDefinition, type);
-                    repository.AddDefinition(locale, (IDestinyDefinition)definition);
+                    repository.AddDefinition((IDestinyDefinition)definition, locale);
                 }
             }
         }
@@ -261,7 +250,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
                 _bungieNetJsonSerializer.Deserialize<DestinyManifest>(await reader.GetFieldValueAsync<string>(1));
             var downloadDate = await reader.GetFieldValueAsync<DateTime>(2);
 
-            var versionModel = new ManifestVersion()
+            var versionModel = new ManifestVersion
             {
                 Version = version,
                 DestinyManifest = manifest,
@@ -303,22 +292,16 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
                 var definitionType = definitionsNode.Name;
 
-                if (!Enum.TryParse<DefinitionsEnum>(definitionType, out var enumValue))
-                {
-                    continue;
-                }
+                if (!Enum.TryParse<DefinitionsEnum>(definitionType, out var enumValue)) continue;
 
-                if (!_configuration.DefinitionsToLoad.Contains(enumValue))
-                {
-                    continue;
-                }
+                if (!_configuration.DefinitionsToLoad.Contains(enumValue)) continue;
 
                 var definitions = definitionsNode.Value.GetRawText();
 
                 await ExecuteQueryAsync(
                     postgreDbConnection,
                     PostgresqlQueries.InsertDefinitions,
-                    (parameters) =>
+                    parameters =>
                     {
                         parameters.AddWithValue("DefinitionType", definitionType);
                         parameters.AddWithValue("Lang", strLocale);
@@ -331,7 +314,7 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
         await ExecuteQueryAsync(
             postgreDbConnection,
             PostgresqlQueries.InsertManifestVersion,
-            (parameters) =>
+            parameters =>
             {
                 parameters.AddWithValue("Version", latestManifest.Version);
                 parameters.AddWithValue("Manifest", _bungieNetJsonSerializer.Serialize(latestManifest));

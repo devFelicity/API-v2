@@ -1,5 +1,8 @@
 ﻿using DotNetBungieAPI.Models.Destiny.Config;
 
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+#pragma warning disable CS8618
+
 namespace Marvin.DefinitionProvider.Postgresql.Models;
 
 public class ManifestVersion

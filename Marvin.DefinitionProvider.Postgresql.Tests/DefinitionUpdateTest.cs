@@ -3,12 +3,17 @@ using DotNetBungieAPI.Models.Destiny.Definitions.PresentationNodes;
 using DotNetBungieAPI.Service.Abstractions;
 using Marvin.DefinitionProvider.Postgresql.Tests.Fixtures;
 
+// ReSharper disable UnusedVariable
+// ReSharper disable UnusedMember.Global
+#pragma warning disable IDE0059
+#pragma warning disable xUnit1013
+
 namespace Marvin.DefinitionProvider.Postgresql.Tests;
 
 public class DefinitionUpdateTest : IClassFixture<DefinitionProviderFixture>
 {
-    private readonly DefinitionProviderFixture _definitionProviderFixture;
     private readonly IBungieClient _bungieClient;
+    private readonly DefinitionProviderFixture _definitionProviderFixture;
 
     public DefinitionUpdateTest(
         DefinitionProviderFixture definitionProviderFixture,

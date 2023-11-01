@@ -30,7 +30,7 @@ public class Startup
                     options.AutoUpdateOnStartup = false;
                     options.MaxAmountOfLeftoverManifests = 5;
                     options.CleanUpOldManifestsAfterUpdate = true;
-                    
+
                     options.DefinitionsToLoad.Add(DefinitionsEnum.DestinyRecordDefinition);
                     options.DefinitionsToLoad.Add(DefinitionsEnum.DestinyInventoryItemDefinition);
                     options.DefinitionsToLoad.Add(DefinitionsEnum.DestinyPresentationNodeDefinition);

@@ -1,15 +1,16 @@
 ﻿using DotNetBungieAPI.Service.Abstractions;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Marvin.DefinitionProvider.Postgresql.Tests.Fixtures;
 
 public class DefinitionProviderFixture : IAsyncLifetime
 {
-    public IDefinitionProvider DefinitionProvider { get; private set; }
-        
     public DefinitionProviderFixture(IDefinitionProvider definitionProvider)
     {
         DefinitionProvider = definitionProvider;
     }
+
+    public IDefinitionProvider DefinitionProvider { get; }
 
     public async Task InitializeAsync()
     {
