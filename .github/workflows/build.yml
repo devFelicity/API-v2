@@ -1,0 +1,28 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore API.csproj
+
+      - name: Build application
+        run: dotnet build API.csproj --configuration Release --no-restore
+
+      - name: Check build status
+        run: dotnet build API.csproj --configuration Release --no-restore --no-incremental
