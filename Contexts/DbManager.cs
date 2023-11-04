@@ -1,46 +1,46 @@
 ﻿using API.Contexts.Objects;
 using Microsoft.EntityFrameworkCore;
 
-// ReSharper disable InvocationIsSkipped
-// ReSharper disable PartialMethodWithSinglePart
-// ReSharper disable UnusedMember.Global
-#pragma warning disable CS8618
-
 namespace API.Contexts;
 
-public partial class FelicityContext : DbContext
+public class DbManager : DbContext
 {
-    public FelicityContext()
+    private readonly string? _connectionString;
+
+    public DbManager()
     {
     }
 
-    public FelicityContext(DbContextOptions<FelicityContext> options)
+    public DbManager(DbContextOptions<DbManager> options, IConfiguration configuration)
         : base(options)
     {
+        _connectionString = configuration.GetConnectionString("PostgreSQL");
     }
 
-    public virtual DbSet<ArmorSale> ArmorSales { get; set; }
+    public virtual DbSet<ArmorSale> ArmorSales { get; set; } = null!;
 
-    public virtual DbSet<BungieProfile> BungieProfiles { get; set; }
+    public virtual DbSet<BungieProfile> BungieProfiles { get; set; } = null!;
 
-    public virtual DbSet<LostSector> LostSectors { get; set; }
+    public virtual DbSet<LostSector> LostSectors { get; set; } = null!;
 
-    public virtual DbSet<Metric> Metrics { get; set; }
+    public virtual DbSet<Metric> Metrics { get; set; } = null!;
 
-    public virtual DbSet<Role> Roles { get; set; }
+    public virtual DbSet<Role> Roles { get; set; } = null!;
 
-    public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<User> Users { get; set; } = null!;
 
-    public virtual DbSet<UserBan> UserBans { get; set; }
+    public virtual DbSet<UserBan> UserBans { get; set; } = null!;
 
-    public virtual DbSet<UserRole> UserRoles { get; set; }
+    public virtual DbSet<UserRole> UserRoles { get; set; } = null!;
 
-    public virtual DbSet<VendorUser> VendorUsers { get; set; }
+    public virtual DbSet<VendorUser> VendorUsers { get; set; } = null!;
 
-    public virtual DbSet<WeaponSale> WeaponSales { get; set; }
+    public virtual DbSet<WeaponSale> WeaponSales { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql(/* TODO: add connection string */);
+    {
+        optionsBuilder.UseNpgsql(_connectionString);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -218,9 +218,5 @@ public partial class FelicityContext : DbContext
             entity.Property(e => e.RequiredResets).HasColumnName("required_resets");
             entity.Property(e => e.VendorId).HasColumnName("vendor_id");
         });
-
-        OnModelCreatingPartial(modelBuilder);
     }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

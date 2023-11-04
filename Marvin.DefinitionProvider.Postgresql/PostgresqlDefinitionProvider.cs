@@ -12,7 +12,6 @@ using Npgsql;
 // ReSharper disable MemberCanBeMadeStatic.Local
 
 // ReSharper disable ClassNeverInstantiated.Global
-#pragma warning disable IDE0052
 #pragma warning disable CA1816
 #pragma warning disable CA1822
 
@@ -121,13 +120,19 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
 
     public async Task Update()
     {
+        _logger.LogInformation("Checking for manifest updates");
         var shouldUpdate = await CheckForUpdates();
         if (shouldUpdate)
         {
+            _logger.LogInformation("Updating manifest");
             var manifest = await _bungieApiAccess.Destiny2.GetDestinyManifest();
             await DownloadAndStoreLatestManifest(manifest.Response);
             _currentLoadedManifest = manifest.Response;
             if (_configuration.CleanUpOldManifestsAfterUpdate) await DeleteOldManifestData();
+        }
+        else
+        {
+            _logger.LogInformation("Manifest is up to date");
         }
     }
 
@@ -320,6 +325,8 @@ public class PostgresqlDefinitionProvider : IDefinitionProvider
                 parameters.AddWithValue("Manifest", _bungieNetJsonSerializer.Serialize(latestManifest));
                 parameters.AddWithValue("DownloadDate", DateTime.UtcNow);
             });
+
+        _logger.LogInformation("Successfully updated manifest to version {Version}", latestManifest.Version);
     }
 
     private async Task ExecuteQueryAsync(
