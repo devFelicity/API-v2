@@ -1,11 +1,12 @@
 using API.Contexts;
 using API.Services;
 using DotNetBungieAPI;
+using DotNetBungieAPI.DefinitionProvider.Sqlite;
+using DotNetBungieAPI.Extensions;
 using DotNetBungieAPI.Models;
 using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
 using DotNetBungieAPI.Service.Abstractions;
-using Marvin.DefinitionProvider.Postgresql;
 using Serilog;
 using Serilog.Events;
 
@@ -31,6 +32,7 @@ public abstract class Program
         {
             EnsureDirectoryExists("Logs");
             EnsureDirectoryExists("Data");
+            EnsureDirectoryExists("Data/Manifest");
 
             var builder = WebApplication.CreateBuilder();
             builder.Host.UseSerilog();
@@ -39,31 +41,53 @@ public abstract class Program
                 .UseBungieApiClient(bungieClientBuilder =>
                 {
                     bungieClientBuilder.ClientConfiguration.ApiKey = builder.Configuration["Bungie:ApiKey"] ??
-                                                                     throw new Exception("API key not configured.");
+                                                                     throw new Exception(
+                                                                         "Bungie API Key not configured.");
+                    bungieClientBuilder.ClientConfiguration.ClientId =
+                        Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
 
-                    bungieClientBuilder.ClientConfiguration.UsedLocales.Add(BungieLocales.EN);
+                    bungieClientBuilder.ClientConfiguration.ClientSecret =
+                        builder.Configuration["Bungie:ClientSecret"] ??
+                        throw new Exception("Bungie Client Secret not configured.");
+
+                    bungieClientBuilder.ClientConfiguration.CacheDefinitions = false;
+
+                    bungieClientBuilder.ClientConfiguration.UsedLocales.AddRange(Enum.GetValues<BungieLocales>());
+
                     bungieClientBuilder.ClientConfiguration.TryFetchDefinitionsFromProvider = true;
 
-                    bungieClientBuilder.DefinitionProvider.UsePostgresqlDefinitionProvider(provider =>
-                    {
-                        provider.ConnectionString = builder.Configuration.GetConnectionString("PostgreSQL") ??
-                                                    throw new Exception("Connection string not configured.");
-
-                        provider.DefinitionsToLoad.AddRange(new[]
+                    bungieClientBuilder
+                        .DefinitionProvider.UseSqliteDefinitionProvider(definitionProvider =>
                         {
-                            DefinitionsEnum.DestinyActivityDefinition,
-                            DefinitionsEnum.DestinyActivityModeDefinition,
-                            DefinitionsEnum.DestinyActivityTypeDefinition,
-                            DefinitionsEnum.DestinyCollectibleDefinition,
-                            DefinitionsEnum.DestinyInventoryItemDefinition,
-                            DefinitionsEnum.DestinyMetricDefinition,
-                            DefinitionsEnum.DestinyObjectiveDefinition,
-                            DefinitionsEnum.DestinyRecordDefinition,
-                            DefinitionsEnum.DestinyVendorDefinition
+                            definitionProvider.AutoUpdateManifestOnStartup = true;
+                            definitionProvider.DeleteOldManifestDataAfterUpdates = false;
+                            definitionProvider.FetchLatestManifestOnInitialize = true;
+                            definitionProvider.ManifestFolderPath = "Data/Manifest";
                         });
-                        provider.AutoUpdateOnStartup = false;
-                        provider.CleanUpOldManifestsAfterUpdate = false;
-                    });
+
+                    bungieClientBuilder.DotNetBungieApiHttpClient.ConfigureDefaultHttpClient(options =>
+                        options.SetRateLimitSettings(190, TimeSpan.FromSeconds(10)));
+
+                    bungieClientBuilder
+                        .DefinitionRepository.ConfigureDefaultRepository(x =>
+                        {
+                            var includeTypes = new[]
+                            {
+                                DefinitionsEnum.DestinyActivityDefinition,
+                                DefinitionsEnum.DestinyActivityModeDefinition,
+                                DefinitionsEnum.DestinyActivityTypeDefinition,
+                                DefinitionsEnum.DestinyCollectibleDefinition,
+                                DefinitionsEnum.DestinyInventoryItemDefinition,
+                                DefinitionsEnum.DestinyMetricDefinition,
+                                DefinitionsEnum.DestinyObjectiveDefinition,
+                                DefinitionsEnum.DestinyRecordDefinition,
+                                DefinitionsEnum.DestinyVendorDefinition
+                            };
+
+                            foreach (var defToIgnore in Enum.GetValues<DefinitionsEnum>())
+                                if (!includeTypes.Contains(defToIgnore))
+                                    x.IgnoreDefinitionType(defToIgnore);
+                        });
                 })
                 .AddHostedService<BungieClientStartupService>();
 
@@ -79,11 +103,9 @@ public abstract class Program
             app.MapGet("/invItem", (IBungieClient bungieClient) =>
             {
                 if (bungieClient.Repository.TryGetDestinyDefinition<DestinyInventoryItemDefinition>(343863063,
-                        out var def))
-                {
+                        out var def, BungieLocales.FR))
                     return Task.FromResult(TypedResults.Json(def.ToString()));
-                }
-                
+
                 return Task.FromResult(TypedResults.Json("manifest query failed"));
             });
 

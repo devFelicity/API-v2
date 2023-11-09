@@ -5,8 +5,6 @@ VisualStudioVersion = 17.8.34227.203
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API.csproj", "{E04D27CC-3CCE-42E6-9631-8B26CA31936F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Marvin.DefinitionProvider.Postgresql", "Marvin.DefinitionProvider.Postgresql\Marvin.DefinitionProvider.Postgresql.csproj", "{B86D0D2D-AC98-4AAD-8C15-390F6B423DDF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{57E6DF63-5BF5-486D-8429-2C60E95BD624}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -26,10 +24,6 @@ Global
 		{E04D27CC-3CCE-42E6-9631-8B26CA31936F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E04D27CC-3CCE-42E6-9631-8B26CA31936F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E04D27CC-3CCE-42E6-9631-8B26CA31936F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B86D0D2D-AC98-4AAD-8C15-390F6B423DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B86D0D2D-AC98-4AAD-8C15-390F6B423DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B86D0D2D-AC98-4AAD-8C15-390F6B423DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B86D0D2D-AC98-4AAD-8C15-390F6B423DDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
