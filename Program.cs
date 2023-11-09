@@ -84,9 +84,9 @@ public abstract class Program
                                 DefinitionsEnum.DestinyVendorDefinition
                             };
 
-                            foreach (var defToIgnore in Enum.GetValues<DefinitionsEnum>())
-                                if (!includeTypes.Contains(defToIgnore))
-                                    x.IgnoreDefinitionType(defToIgnore);
+                            foreach (var defType in Enum.GetValues<DefinitionsEnum>())
+                                if (!includeTypes.Contains(defType))
+                                    x.IgnoreDefinitionType(defType);
                         });
                 })
                 .AddHostedService<BungieClientStartupService>();
@@ -102,7 +102,7 @@ public abstract class Program
 
             app.MapGet("/invItem", (IBungieClient bungieClient) =>
             {
-                if (bungieClient.Repository.TryGetDestinyDefinition<DestinyInventoryItemDefinition>(343863063,
+                if (bungieClient.TryGetDefinition<DestinyInventoryItemDefinition>(343863063,
                         out var def, BungieLocales.FR))
                     return Task.FromResult(TypedResults.Json(def.ToString()));
 
