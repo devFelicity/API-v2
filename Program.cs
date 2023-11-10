@@ -36,7 +36,11 @@ public abstract class Program
 
             var builder = WebApplication.CreateBuilder();
             builder.Host.UseSerilog();
-            builder.Services.AddDbContext<DbManager>();
+
+            var dbDataSource = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("PostgreSQL"))
+                .Build();
+            builder.Services.AddDbContext<DbManager>(options => options.UseNpgsql(dbDataSource));
+
             builder.Services
                 .UseBungieApiClient(bungieClientBuilder =>
                 {

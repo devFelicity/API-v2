@@ -5,16 +5,12 @@ namespace API.Contexts;
 
 public class DbManager : DbContext
 {
-    private readonly string? _connectionString;
-
     public DbManager()
     {
     }
 
-    public DbManager(DbContextOptions<DbManager> options, IConfiguration configuration)
-        : base(options)
+    public DbManager(DbContextOptions<DbManager> options) : base(options)
     {
-        _connectionString = configuration.GetConnectionString("PostgreSQL");
     }
 
     public virtual DbSet<ArmorSale> ArmorSales { get; set; } = null!;
@@ -36,11 +32,6 @@ public class DbManager : DbContext
     public virtual DbSet<VendorUser> VendorUsers { get; set; } = null!;
 
     public virtual DbSet<WeaponSale> WeaponSales { get; set; } = null!;
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql(_connectionString);
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
