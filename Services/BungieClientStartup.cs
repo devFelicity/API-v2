@@ -1,5 +1,5 @@
-﻿using DotNetBungieAPI.Service.Abstractions;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using DotNetBungieAPI.Service.Abstractions;
 
 namespace API.Services;
 
