@@ -1,12 +1,18 @@
+using System.Diagnostics;
 using API.Contexts;
+using API.Responses;
+using API.Routes;
 using API.Services;
 using DotNetBungieAPI;
 using DotNetBungieAPI.DefinitionProvider.Sqlite;
 using DotNetBungieAPI.Extensions;
+using DotNetBungieAPI.HashReferences;
 using DotNetBungieAPI.Models;
 using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
 using DotNetBungieAPI.Service.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 using Serilog.Events;
 
@@ -58,7 +64,7 @@ public abstract class Program
 
                     bungieClientBuilder.ClientConfiguration.CacheDefinitions = false;
 
-                    bungieClientBuilder.ClientConfiguration.UsedLocales.AddRange(Enum.GetValues<BungieLocales>());
+                    bungieClientBuilder.ClientConfiguration.UsedLocales.Add(BungieLocales.EN);
 
                     bungieClientBuilder.ClientConfiguration.TryFetchDefinitionsFromProvider = true;
 
@@ -80,13 +86,13 @@ public abstract class Program
                             var includeTypes = new[]
                             {
                                 DefinitionsEnum.DestinyActivityDefinition,
-                                DefinitionsEnum.DestinyActivityModeDefinition,
-                                DefinitionsEnum.DestinyActivityTypeDefinition,
+                                // DefinitionsEnum.DestinyActivityModeDefinition,
+                                // DefinitionsEnum.DestinyActivityTypeDefinition,
                                 DefinitionsEnum.DestinyCollectibleDefinition,
                                 DefinitionsEnum.DestinyInventoryItemDefinition,
-                                DefinitionsEnum.DestinyMetricDefinition,
-                                DefinitionsEnum.DestinyObjectiveDefinition,
-                                DefinitionsEnum.DestinyRecordDefinition,
+                                // DefinitionsEnum.DestinyMetricDefinition,
+                                // DefinitionsEnum.DestinyObjectiveDefinition,
+                                // DefinitionsEnum.DestinyRecordDefinition,
                                 DefinitionsEnum.DestinyVendorDefinition
                             };
 
@@ -107,19 +113,34 @@ public abstract class Program
                     "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.00} ms";
             });
 
-            app.MapGroup("/users")
-                .MapGet("/getUser", (DbManager db) => Task.FromResult(TypedResults.Ok(db.Users.First())));
-
-            app.MapGet("/invItem", (IBungieClient bungieClient) =>
+            app.MapGet("/", () =>
             {
-                if (bungieClient.TryGetDefinition<DestinyInventoryItemDefinition>(343863063,
-                        out var def, BungieLocales.FR))
-                    return Task.FromResult(TypedResults.Json(def.ToString()));
-
-                return Task.FromResult(TypedResults.Json("manifest query failed"));
+                return Variables.Environment switch
+                {
+                    Environment.Development => Results.Ok("Hello World!"),
+                    _ => Results.Redirect("https://tryfelicity.one", true)
+                };
             });
 
             app.MapGet("/health", () => Results.Ok());
+
+            app.MapGroup("/users").MapUsers();
+            app.MapGroup("/status").MapStatus();
+
+            app.MapGet("/invItem",
+                (IBungieClient bungieClient) => Task.FromResult(
+                    bungieClient.TryGetDefinition<DestinyInventoryItemDefinition>(
+                        DefinitionHashes.InventoryItems.ExoticEngram_343863063, out var def)
+                        ? TypedResults.Json(def.ToString())
+                        : TypedResults.Json("manifest query failed")));
+
+            app.MapGet("/pp", async () => TypedResults.Json(await Voluspa.ParallelQuery.GetResponse()));
+
+            app.MapGet("/bestApp", async () =>
+            {
+                var programs = await Voluspa.ParallelQuery.GetResponse();
+                return TypedResults.Json(programs.Response?.ElementAt(1));
+            });
 
             app.Run();
         }

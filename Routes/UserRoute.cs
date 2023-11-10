@@ -2,12 +2,10 @@
 
 namespace API.Routes;
 
-public class UserRoute(DbManager db)
+public static class UserRoute
 {
-    private readonly DbManager _db = db;
-
-    public int GetCount()
+    public static void MapUsers(this RouteGroupBuilder group)
     {
-        return _db.Users.Count();
+        group.MapGet("/test", (DbManager db) => Task.FromResult(TypedResults.Ok(db.Users.OrderBy(x => x.Id).First())));
     }
 }
