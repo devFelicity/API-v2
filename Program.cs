@@ -99,9 +99,13 @@ public abstract class Program
 
             var app = builder.Build();
 
-            app.UseSerilogRequestLogging();
+            Logging.LoggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 
-            app.MapGet("/", () => "Hello World!");
+            app.UseSerilogRequestLogging(x =>
+            {
+                x.MessageTemplate =
+                    "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.00} ms";
+            });
 
             app.MapGroup("/users")
                 .MapGet("/getUser", (DbManager db) => Task.FromResult(TypedResults.Ok(db.Users.First())));
