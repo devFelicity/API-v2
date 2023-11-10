@@ -28,6 +28,8 @@ public abstract class Program
                 restrictedToMinimumLevel: LogEventLevel.Information)
             .CreateLogger();
 
+        Variables.Environment = Debugger.IsAttached ? Environment.Development : Environment.Production;
+
         try
         {
             EnsureDirectoryExists("Logs");
