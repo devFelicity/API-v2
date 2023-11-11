@@ -56,7 +56,7 @@ public class DbManager : DbContext
 
             entity.HasIndex(e => e.MembershipId, "bungie_profile_membership_id_unique").IsUnique();
 
-            entity.HasIndex(e => e.UserId, "bungie_profile_user_id_unique").IsUnique();
+            entity.HasIndex(e => e.UserId, "bungie_profile_user_id_unique");
 
             entity.Property(e => e.MembershipId).HasColumnName("membership_id");
             entity.Property(e => e.MembershipType).HasColumnName("membership_type");
