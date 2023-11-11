@@ -3,11 +3,13 @@ using API.Contexts;
 using API.Responses;
 using API.Routes;
 using API.Services;
+using API.Util;
 using DotNetBungieAPI;
 using DotNetBungieAPI.DefinitionProvider.Sqlite;
 using DotNetBungieAPI.Extensions;
 using DotNetBungieAPI.HashReferences;
 using DotNetBungieAPI.Models;
+using DotNetBungieAPI.Models.Applications;
 using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
 using DotNetBungieAPI.Service.Abstractions;
@@ -26,9 +28,8 @@ public abstract class Program
             .Enrich.FromLogContext()
 #if DEBUG
             .MinimumLevel.Debug()
-#else
-            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 #endif
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .WriteTo.Console()
             .WriteTo.File("Logs/latest-.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14,
                 restrictedToMinimumLevel: LogEventLevel.Information)
@@ -45,30 +46,36 @@ public abstract class Program
             var builder = WebApplication.CreateBuilder();
             builder.Host.UseSerilog();
 
+            DiscordTools.Initialize(builder.Configuration);
+
             var dbDataSource = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("PostgreSQL"))
                 .Build();
             builder.Services.AddDbContext<DbManager>(options => options.UseNpgsql(dbDataSource));
 
             builder.Services
-                .UseBungieApiClient(bungieClientBuilder =>
+                .UseBungieApiClient(bungieBuilder =>
                 {
-                    bungieClientBuilder.ClientConfiguration.ApiKey = builder.Configuration["Bungie:ApiKey"] ??
-                                                                     throw new Exception(
-                                                                         "Bungie API Key not configured.");
-                    bungieClientBuilder.ClientConfiguration.ClientId =
-                        Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
+                    bungieBuilder.ClientConfiguration.ApplicationScopes = ApplicationScopes.ReadUserData |
+                                                                          ApplicationScopes.ReadBasicUserProfile;
 
-                    bungieClientBuilder.ClientConfiguration.ClientSecret =
-                        builder.Configuration["Bungie:ClientSecret"] ??
-                        throw new Exception("Bungie Client Secret not configured.");
+                    bungieBuilder.ClientConfiguration
+                            .ApiKey = builder.Configuration["Bungie:ApiKey"] ??
+                                      throw new Exception("Bungie API Key not configured.");
 
-                    bungieClientBuilder.ClientConfiguration.CacheDefinitions = false;
+                    bungieBuilder.ClientConfiguration
+                        .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
 
-                    bungieClientBuilder.ClientConfiguration.UsedLocales.Add(BungieLocales.EN);
+                    bungieBuilder.ClientConfiguration
+                            .ClientSecret = builder.Configuration["Bungie:ClientSecret"] ??
+                                            throw new Exception("Bungie Client Secret not configured.");
 
-                    bungieClientBuilder.ClientConfiguration.TryFetchDefinitionsFromProvider = true;
+                    bungieBuilder.ClientConfiguration.CacheDefinitions = false;
 
-                    bungieClientBuilder
+                    bungieBuilder.ClientConfiguration.UsedLocales.Add(BungieLocales.EN);
+
+                    bungieBuilder.ClientConfiguration.TryFetchDefinitionsFromProvider = true;
+
+                    bungieBuilder
                         .DefinitionProvider.UseSqliteDefinitionProvider(definitionProvider =>
                         {
                             definitionProvider.AutoUpdateManifestOnStartup = true;
@@ -77,10 +84,10 @@ public abstract class Program
                             definitionProvider.ManifestFolderPath = "Data/Manifest";
                         });
 
-                    bungieClientBuilder.DotNetBungieApiHttpClient.ConfigureDefaultHttpClient(options =>
+                    bungieBuilder.DotNetBungieApiHttpClient.ConfigureDefaultHttpClient(options =>
                         options.SetRateLimitSettings(190, TimeSpan.FromSeconds(10)));
 
-                    bungieClientBuilder
+                    bungieBuilder
                         .DefinitionRepository.ConfigureDefaultRepository(x =>
                         {
                             var includeTypes = new[]
