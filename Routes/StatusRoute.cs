@@ -1,5 +1,6 @@
 ﻿using API.Responses;
 using API.Services;
+using API.Util;
 using DotNetBungieAPI.Service.Abstractions;
 
 namespace API.Routes;
@@ -81,8 +82,7 @@ public static class StatusRoute
     {
         try
         {
-            var response = await bungieClient.ApiAccess.Misc.GetCommonSettings();
-            return response.IsSuccessfulResponseCode && response.Response.Systems["Destiny2"].IsEnabled;
+            return await BungieTools.IsApiUp(bungieClient);
         }
         catch (Exception ex)
         {
