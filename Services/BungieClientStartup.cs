@@ -23,7 +23,7 @@ public class BungieClientStartupService(IBungieClient bungieClient,
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(DateTimeExtensions.GetRoundedTimeSpan(5), stoppingToken);
+                await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(5), stoppingToken);
                 await UpdateChecker();
             }
         }
