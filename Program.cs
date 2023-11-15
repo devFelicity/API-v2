@@ -7,12 +7,9 @@ using API.Util;
 using DotNetBungieAPI;
 using DotNetBungieAPI.DefinitionProvider.Sqlite;
 using DotNetBungieAPI.Extensions;
-using DotNetBungieAPI.HashReferences;
 using DotNetBungieAPI.Models;
 using DotNetBungieAPI.Models.Applications;
 using DotNetBungieAPI.Models.Destiny;
-using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
-using DotNetBungieAPI.Service.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
@@ -71,7 +68,7 @@ public abstract class Program
 
                     bungieBuilder.ClientConfiguration.CacheDefinitions = false;
 
-                    bungieBuilder.ClientConfiguration.UsedLocales.Add(BungieLocales.EN);
+                    bungieBuilder.ClientConfiguration.UsedLocales.AddRange(Enum.GetValues<BungieLocales>());
 
                     bungieBuilder.ClientConfiguration.TryFetchDefinitionsFromProvider = true;
 
@@ -134,13 +131,6 @@ public abstract class Program
             app.MapGroup("/manifest").MapManifest();
             app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();
-
-            app.MapGet("/invItem",
-                (IBungieClient bungieClient) => Task.FromResult(
-                    bungieClient.TryGetDefinition<DestinyInventoryItemDefinition>(
-                        DefinitionHashes.InventoryItems.ExoticEngram_343863063, out var def)
-                        ? TypedResults.Json(def.ToString())
-                        : TypedResults.Json("manifest query failed")));
 
             app.MapGet("/pp", async () => TypedResults.Json(await Voluspa.ParallelQuery.GetResponse()));
 
