@@ -53,7 +53,9 @@ public abstract class Program
                 .UseBungieApiClient(bungieBuilder =>
                 {
                     bungieBuilder.ClientConfiguration.ApplicationScopes = ApplicationScopes.ReadUserData |
-                                                                          ApplicationScopes.ReadBasicUserProfile;
+                                                                          ApplicationScopes.ReadBasicUserProfile |
+                                                                          ApplicationScopes.ReadDestinyInventoryAndVault |
+                                                                          ApplicationScopes.MoveEquipDestinyItems;
 
                     bungieBuilder.ClientConfiguration
                             .ApiKey = builder.Configuration["Bungie:ApiKey"] ??
