@@ -9,7 +9,8 @@ namespace API.Routes;
 
 public static class StatusRoute
 {
-    private static readonly ILogger Logger = Logging.CreateLogger("StatusRoute");
+    private const string RouteName = "StatusRoute";
+    private static readonly ILogger Logger = Logging.CreateLogger(RouteName);
 
     public static void MapStatus(this RouteGroupBuilder group)
     {
@@ -55,7 +56,7 @@ public static class StatusRoute
         catch (Exception ex)
         {
             if (Variables.Environment == Environment.Development)
-                Logger.LogError(ex, "[StatusRoute] {service} is not healthy", "Felicity.Api");
+                Logger.LogError(ex, "[{route}] {service} is not healthy", RouteName, "Felicity.Api");
 
             return false;
         }
@@ -72,7 +73,7 @@ public static class StatusRoute
         catch (Exception ex)
         {
             if (Variables.Environment == Environment.Development)
-                Logger.LogError(ex, "[StatusRoute] {service} is not healthy", "Felicity");
+                Logger.LogError(ex, "[{route}] {service} is not healthy", RouteName, "Felicity");
 
             return false;
         }
@@ -87,7 +88,7 @@ public static class StatusRoute
         catch (Exception ex)
         {
             if (Variables.Environment == Environment.Development)
-                Logger.LogError(ex, "[StatusRoute] {service} is not healthy", "Bungie");
+                Logger.LogError(ex, "[{route}] {service} is not healthy", RouteName, "Bungie");
 
             return false;
         }
