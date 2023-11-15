@@ -131,7 +131,8 @@ public abstract class Program
 
             app.MapGet("/health", () => Results.Ok());
 
-            app.MapGroup("/users").MapUsers();
+            app.MapGroup("/manifest").MapManifest();
+            app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();
 
             app.MapGet("/invItem",

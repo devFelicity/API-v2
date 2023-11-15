@@ -21,6 +21,9 @@ public class BungieClientStartupService(IBungieClient bungieClient,
             logger.LogInformation("Finished reading definitions ({Time} ms)",
                 initStopwatch.ElapsedMilliseconds);
 
+            var currentManifest = await bungieClient.DefinitionProvider.GetCurrentManifest();
+            Variables.ManifestVersion = currentManifest.Version;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(5), stoppingToken);
@@ -68,6 +71,9 @@ public class BungieClientStartupService(IBungieClient bungieClient,
                 await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
                     $"[{serviceName}] finished updating definitions ({updateStopwatch.ElapsedMilliseconds} ms)\n" +
                     $"New version: {manifest.Response.Version}");
+
+                Variables.ManifestVersion = manifest.Response.Version;
+                _isUpdating = false;
             }
             else
             {
@@ -76,7 +82,7 @@ public class BungieClientStartupService(IBungieClient bungieClient,
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Exception in UpdateChecker");
+            logger.LogError(e, "Exception in {service}", serviceName);
         }
     }
 }
