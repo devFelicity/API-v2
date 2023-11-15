@@ -3,7 +3,6 @@ using API.Contexts;
 using API.Contexts.Objects;
 using API.Services;
 using DotNetBungieAPI.Models.User;
-using DotNetBungieAPI.Service.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 
 namespace API.Routes;
@@ -12,18 +11,18 @@ public static class AuthRoute
 {
     public static void MapAuth(this RouteGroupBuilder group)
     {
-        group.MapGet("/bungie_net/{discordId}", async (HttpContext httpContext, ulong discordId) =>
+        group.MapGet("/bungie/{discordId}", async (HttpContext httpContext, ulong discordId) =>
         {
             await httpContext.ChallengeAsync(
                 "BungieNet",
                 new AuthenticationProperties
                 {
-                    RedirectUri = $"auth/bungie_net/{discordId}/post_callback/"
+                    RedirectUri = $"auth/bungie/{discordId}/post_callback/"
                 });
         });
 
-        group.MapGet("/bungie_net/{discordId}/post_callback",
-            async (HttpContext httpContext, IBungieClient bungieClient, DbManager db, ulong discordId) =>
+        group.MapGet("/bungie/{discordId}/post_callback",
+            async (HttpContext httpContext, DbManager db, ulong discordId) =>
             {
                 var claim = httpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
                 if (claim is null)
@@ -38,8 +37,6 @@ public static class AuthRoute
                 var nowTime = DateTime.UtcNow;
                 var baseTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day,
                     nowTime.Hour, nowTime.Minute, nowTime.Second);
-
-                var latestProfile = new DestinyProfileUserInfoCard();
 
                 var user = db.Users.FirstOrDefault(x => x.Id == discordId);
                 var bungieUser = db.BungieProfiles.FirstOrDefault(x => x.UserId == discordId);
