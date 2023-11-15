@@ -5,11 +5,14 @@ using API.Routes;
 using API.Services;
 using API.Util;
 using DotNetBungieAPI;
+using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
 using DotNetBungieAPI.DefinitionProvider.Sqlite;
 using DotNetBungieAPI.Extensions;
 using DotNetBungieAPI.Models;
 using DotNetBungieAPI.Models.Applications;
 using DotNetBungieAPI.Models.Destiny;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog;
@@ -109,6 +112,39 @@ public abstract class Program
                 })
                 .AddHostedService<BungieClientStartupService>();
 
+            builder.Services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultAuthenticateScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie()
+                .AddBungieNet(options =>
+                {
+                    options.ClientId = builder.Configuration["Bungie:ClientId"]!;
+                    options.ApiKey = builder.Configuration["Bungie:ApiKey"]!;
+                    options.ClientSecret = builder.Configuration["Bungie:ClientSecret"]!;
+                    options.Events = new OAuthEvents
+                    {
+                        OnCreatingTicket = oAuthCreatingTicketContext =>
+                        {
+                            BungieAuthCacheService.TryAddContext(oAuthCreatingTicketContext);
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+
+            builder.Services
+                .AddControllers(options => { options.EnableEndpointRouting = false; })
+                .AddJsonOptions(x => { BungieAuthCacheService.Initialize(x.JsonSerializerOptions); });
+
+            builder.Services.AddCors(c =>
+            {
+                c.AddPolicy("AllowOrigin",
+                    options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            });
+
             var app = builder.Build();
 
             Logging.LoggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
@@ -130,6 +166,7 @@ public abstract class Program
 
             app.MapGet("/health", () => Results.Ok());
 
+            app.MapGroup("/auth").MapAuth();
             app.MapGroup("/manifest").MapManifest();
             app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();

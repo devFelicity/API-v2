@@ -1,7 +1,9 @@
 ﻿using API.Responses;
 using API.Services;
 using API.Util;
+using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
 using DotNetBungieAPI.Service.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Routes;
 
