@@ -30,7 +30,7 @@
     <PackageReference Include="DotNetBungieAPI.Models" Version="2.11.3" />
     <PackageReference Include="DotNetBungieAPI.Service.Abstractions" Version="2.11.1" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
