@@ -2,7 +2,6 @@
 using API.Contexts;
 using API.Contexts.Objects;
 using API.Services;
-using DotNetBungieAPI.Models.User;
 using Microsoft.AspNetCore.Authentication;
 
 namespace API.Routes;
@@ -39,7 +38,7 @@ public static class AuthRoute
                     nowTime.Hour, nowTime.Minute, nowTime.Second);
 
                 var user = db.Users.FirstOrDefault(x => x.Id == discordId);
-                var bungieUser = db.BungieProfiles.FirstOrDefault(x => x.UserId == discordId);
+                var bungieUsers = db.BungieProfiles.Where(x => x.UserId == discordId).ToList();
                 var addUser = false;
                 var addBungieUser = false;
 
@@ -55,17 +54,29 @@ public static class AuthRoute
                     };
                 }
 
-                if (bungieUser == null)
+                BungieProfile? bungieUser;
+
+                if (!bungieUsers.Any())
                 {
                     addBungieUser = true;
 
                     bungieUser = new BungieProfile
                     {
-                        UserId = discordId
+                        UserId = discordId,
+                        MembershipId = token.MembershipId
                     };
                 }
+                else
+                {
+                    bungieUser = bungieUsers.FirstOrDefault(x => x.MembershipId == token.MembershipId);
 
-                bungieUser.MembershipId = token.MembershipId;
+                    if (bungieUser == null)
+                    {
+                        addBungieUser = true;
+                        bungieUser = new BungieProfile { UserId = discordId, MembershipId = token.MembershipId };
+                    }
+                }
+
                 bungieUser.OauthToken = token.AccessToken;
                 bungieUser.RefreshToken = token.RefreshToken;
                 bungieUser.TokenExpires = baseTime.AddSeconds(token.ExpiresIn);
