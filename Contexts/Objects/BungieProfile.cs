@@ -5,7 +5,7 @@ namespace API.Contexts.Objects;
 
 public partial class BungieProfile
 {
-    public long UserId { get; set; }
+    public ulong UserId { get; set; }
 
     public long MembershipId { get; set; }
 

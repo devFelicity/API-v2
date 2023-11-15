@@ -37,9 +37,9 @@ public class DbManager : DbContext
     {
         modelBuilder.Entity<ArmorSale>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("armor_sale");
+            entity.HasKey(e => e.Id).HasName("armor_sale_pkey");
+
+            entity.ToTable("armor_sale");
 
             entity.Property(e => e.Class).HasColumnName("class");
             entity.Property(e => e.ItemId).HasColumnName("item_id");
@@ -50,9 +50,9 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<BungieProfile>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("bungie_profile");
+            entity.HasKey(e => e.UserId).HasName("bungie_profile_pkey");
+            
+            entity.ToTable("bungie_profile");
 
             entity.HasIndex(e => e.MembershipId, "bungie_profile_membership_id_unique").IsUnique();
 
@@ -132,7 +132,7 @@ public class DbManager : DbContext
                 .HasColumnType("timestamp(0) without time zone")
                 .HasColumnName("last_command");
             entity.Property(e => e.RegisteredFelicity).HasColumnName("registered_felicity");
-            entity.Property(e => e.RegisteredLostsector).HasColumnName("registered_lostsector");
+            entity.Property(e => e.RegisteredLostSector).HasColumnName("registered_lostsector");
         });
 
         modelBuilder.Entity<UserBan>(entity =>
@@ -157,9 +157,9 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("user_role");
+            entity.HasKey(e => e.UserId).HasName("user_role_pkey");
+
+            entity.ToTable("user_role");
 
             entity.Property(e => e.RoleSlug).HasColumnName("role_slug");
             entity.Property(e => e.UserId).HasColumnName("user_id");
@@ -177,9 +177,9 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<VendorUser>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("vendor_user");
+            entity.HasKey(e => e.UserId).HasName("vendor_user_pkey");
+
+            entity.ToTable("vendor_user");
 
             entity.HasIndex(e => new { e.VendorId, e.Resets }, "vendor_user_vendor_id_resets_index");
 
@@ -196,9 +196,9 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<WeaponSale>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("weapon_sale");
+            entity.HasKey(e => e.Id).HasName("weapon_sale_pkey");
+
+            entity.ToTable("weapon_sale");
 
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.ItemPerks).HasColumnName("item_perks");

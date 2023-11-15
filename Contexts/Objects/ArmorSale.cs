@@ -13,4 +13,6 @@ public partial class ArmorSale
     public int Class { get; set; }
 
     public string Stats { get; set; } = null!;
+
+    public int Id { get; set; }
 }

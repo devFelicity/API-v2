@@ -16,4 +16,6 @@ public partial class WeaponSale
     public int RequiredRank { get; set; }
 
     public int RequiredResets { get; set; }
+
+    public int Id { get; set; }
 }

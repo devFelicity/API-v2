@@ -5,7 +5,7 @@ namespace API.Contexts.Objects;
 
 public partial class UserRole
 {
-    public long UserId { get; set; }
+    public ulong UserId { get; set; }
 
     public string RoleSlug { get; set; } = null!;
 
