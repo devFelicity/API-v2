@@ -12,4 +12,6 @@ public partial class Role
     public string Description { get; set; } = null!;
 
     public string BadgeUrl { get; set; } = null!;
+
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

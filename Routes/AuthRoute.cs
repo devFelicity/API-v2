@@ -42,8 +42,7 @@ public static class AuthRoute
                 var baseTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day,
                     nowTime.Hour, nowTime.Minute, nowTime.Second);
 
-                var user = db.Users.FirstOrDefault(x => x.Id == discordId);
-                var bungieUsers = db.BungieProfiles.Where(x => x.UserId == discordId).ToList();
+                var user = await db.Users.Include(user => user.BungieProfiles).FirstOrDefaultAsync(x => x.Id == discordId);
                 var addUser = false;
                 var addBungieUser = false;
 
@@ -60,6 +59,7 @@ public static class AuthRoute
                 }
 
                 BungieProfile? bungieUser;
+                var bungieUsers = user.BungieProfiles;
 
                 if (bungieUsers.Count == 0)
                 {

@@ -21,5 +21,7 @@ public partial class BungieProfile
 
     public bool NeverExpire { get; set; }
 
+    public int Id { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

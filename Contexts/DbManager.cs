@@ -41,6 +41,7 @@ public class DbManager : DbContext
 
             entity.ToTable("armor_sale");
 
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Class).HasColumnName("class");
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.SetName).HasColumnName("set_name");
@@ -50,14 +51,13 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<BungieProfile>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("bungie_profile_pkey");
-            
+            entity.HasKey(e => e.Id).HasName("bungie_profile_pkey");
+
             entity.ToTable("bungie_profile");
 
             entity.HasIndex(e => e.MembershipId, "bungie_profile_membership_id_unique").IsUnique();
 
-            entity.HasIndex(e => e.UserId, "bungie_profile_user_id_unique");
-
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MembershipId).HasColumnName("membership_id");
             entity.Property(e => e.MembershipType).HasColumnName("membership_type");
             entity.Property(e => e.NeverExpire).HasColumnName("never_expire");
@@ -71,8 +71,8 @@ public class DbManager : DbContext
                 .HasColumnName("token_expires");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            entity.HasOne(d => d.User).WithOne()
-                .HasForeignKey<BungieProfile>(d => d.UserId)
+            entity.HasOne(d => d.User).WithMany(p => p.BungieProfiles)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("bungie_profile_user_id_foreign");
         });
@@ -161,16 +161,18 @@ public class DbManager : DbContext
 
             entity.ToTable("user_role");
 
+            entity.Property(e => e.UserId)
+                .ValueGeneratedNever()
+                .HasColumnName("user_id");
             entity.Property(e => e.RoleSlug).HasColumnName("role_slug");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            entity.HasOne(d => d.RoleSlugNavigation).WithMany()
+            entity.HasOne(d => d.RoleSlugNavigation).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.RoleSlug)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("user_role_role_slug_foreign");
 
-            entity.HasOne(d => d.User).WithMany()
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.User).WithOne(p => p.UserRole)
+                .HasForeignKey<UserRole>(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("user_role_user_id_foreign");
         });
@@ -183,13 +185,15 @@ public class DbManager : DbContext
 
             entity.HasIndex(e => new { e.VendorId, e.Resets }, "vendor_user_vendor_id_resets_index");
 
+            entity.Property(e => e.UserId)
+                .ValueGeneratedNever()
+                .HasColumnName("user_id");
             entity.Property(e => e.Rank).HasColumnName("rank");
             entity.Property(e => e.Resets).HasColumnName("resets");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.VendorId).HasColumnName("vendor_id");
 
-            entity.HasOne(d => d.User).WithMany()
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.User).WithOne(p => p.VendorUser)
+                .HasForeignKey<VendorUser>(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("vendor_user_user_id_foreign");
         });
@@ -200,6 +204,7 @@ public class DbManager : DbContext
 
             entity.ToTable("weapon_sale");
 
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.ItemPerks).HasColumnName("item_perks");
             entity.Property(e => e.QueryTime)
