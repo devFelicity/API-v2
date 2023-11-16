@@ -116,8 +116,8 @@ public abstract class Program
                 .AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultAuthenticateScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
+                    // options.DefaultChallengeScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
+                    // options.DefaultAuthenticateScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
                 })
                 .AddCookie()
                 .AddBungieNet(options =>

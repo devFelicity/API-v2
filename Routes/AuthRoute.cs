@@ -2,7 +2,10 @@
 using API.Contexts;
 using API.Contexts.Objects;
 using API.Services;
+using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Routes;
 
@@ -10,7 +13,9 @@ public static class AuthRoute
 {
     public static void MapAuth(this RouteGroupBuilder group)
     {
-        group.MapGet("/bungie/{discordId}", async (HttpContext httpContext, ulong discordId) =>
+        group.MapGet("/bungie/{discordId}",
+            [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
+            async (HttpContext httpContext, ulong discordId) =>
         {
             await httpContext.ChallengeAsync(
                 "BungieNet",
@@ -56,7 +61,7 @@ public static class AuthRoute
 
                 BungieProfile? bungieUser;
 
-                if (!bungieUsers.Any())
+                if (bungieUsers.Count == 0)
                 {
                     addBungieUser = true;
 
