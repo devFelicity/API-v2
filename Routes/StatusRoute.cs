@@ -1,9 +1,7 @@
 ﻿using API.Responses;
 using API.Services;
 using API.Util;
-using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
 using DotNetBungieAPI.Service.Abstractions;
-using Microsoft.AspNetCore.Authorization;
 
 namespace API.Routes;
 
@@ -66,10 +64,14 @@ public static class StatusRoute
 
     private static bool IsFelicityAlive()
     {
-        try
+        var url = Variables.Environment == Environment.Development
+            ? "http://localhost:5050/health"
+            : "http://felicity/health";
+
+        try 
         {
             using var client = new HttpClient();
-            var response = client.GetAsync("http://felicity/health").Result;
+            var response = client.GetAsync(url).Result;
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
