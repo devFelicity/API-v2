@@ -58,6 +58,7 @@ public abstract class Program
                     bungieBuilder.ClientConfiguration.ApplicationScopes = ApplicationScopes.ReadUserData |
                                                                           ApplicationScopes.ReadBasicUserProfile |
                                                                           ApplicationScopes
+                                                                              .ReadDestinyInventoryAndVault |
                                                                           ApplicationScopes.MoveEquipDestinyItems;
 
                     bungieBuilder.ClientConfiguration
@@ -105,7 +106,7 @@ public abstract class Program
                                     x.IgnoreDefinitionType(defType);
                         });
                 })
-                .AddHostedService<BungieClientStartupService>();
+                .AddHostedService<BungieClientService>();
 
             builder.Services
                 .AddAuthentication(options =>
@@ -140,7 +141,7 @@ public abstract class Program
 
             var app = builder.Build();
 
-            Logging.LoggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+            LogService.LoggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 
             app.UseSerilogRequestLogging(x =>
             {

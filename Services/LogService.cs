@@ -2,7 +2,7 @@
 
 namespace API.Services;
 
-internal static class Logging
+internal static class LogService
 {
     internal static ILoggerFactory LoggerFactory { get; set; } = new LoggerFactory();
 

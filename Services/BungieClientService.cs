@@ -4,8 +4,8 @@ using DotNetBungieAPI.Service.Abstractions;
 
 namespace API.Services;
 
-public class BungieClientStartupService(IBungieClient bungieClient,
-        ILogger<BungieClientStartupService> logger)
+public class BungieClientService(IBungieClient bungieClient,
+        ILogger<BungieClientService> logger)
     : BackgroundService
 {
     private bool _isUpdating;
