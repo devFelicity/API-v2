@@ -179,6 +179,12 @@ public abstract class Program
                 return TypedResults.Json(programs.Response?.ElementAt(1));
             });
 
+            app.MapGet("/test", async (DbManager db) =>
+            {
+                var result = await db.LostSectorLootPools.OrderBy(x => x.Id).FirstOrDefaultAsync();
+                TypedResults.Json(result);
+            });
+
             app.Run();
         }
         catch (Exception ex)

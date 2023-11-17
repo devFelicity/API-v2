@@ -14,23 +14,15 @@ public class DbManager : DbContext
     }
 
     public virtual DbSet<ArmorSale> ArmorSales { get; set; } = null!;
-
     public virtual DbSet<BungieProfile> BungieProfiles { get; set; } = null!;
-
     public virtual DbSet<LostSector> LostSectors { get; set; } = null!;
-
+    public virtual DbSet<LostSectorLootPool> LostSectorLootPools { get; set; } = null!;
     public virtual DbSet<Metric> Metrics { get; set; } = null!;
-
     public virtual DbSet<Role> Roles { get; set; } = null!;
-
     public virtual DbSet<User> Users { get; set; } = null!;
-
     public virtual DbSet<UserBan> UserBans { get; set; } = null!;
-
     public virtual DbSet<UserRole> UserRoles { get; set; } = null!;
-
     public virtual DbSet<VendorUser> VendorUsers { get; set; } = null!;
-
     public virtual DbSet<WeaponSale> WeaponSales { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -92,6 +84,16 @@ public class DbManager : DbContext
             entity.Property(e => e.SolarCount).HasColumnName("solar_count");
             entity.Property(e => e.UnstopCount).HasColumnName("unstop_count");
             entity.Property(e => e.VoidCount).HasColumnName("void_count");
+        });
+
+        modelBuilder.Entity<LostSectorLootPool>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("lost_sector_lootpool_pkey");
+
+            entity.ToTable("lost_sector_lootpool");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ItemIds).HasColumnName("item_ids");
         });
 
         modelBuilder.Entity<Metric>(entity =>
