@@ -10,7 +10,7 @@ namespace API.Routes;
 public static class StatusRoute
 {
     private const string RouteName = "StatusRoute";
-    private static readonly ILogger Logger = Logging.CreateLogger(RouteName);
+    private static readonly ILogger Logger = LogService.CreateLogger(RouteName);
 
     public static void MapStatus(this RouteGroupBuilder group)
     {

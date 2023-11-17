@@ -57,7 +57,7 @@ public abstract class Program
                 {
                     bungieBuilder.ClientConfiguration.ApplicationScopes = ApplicationScopes.ReadUserData |
                                                                           ApplicationScopes.ReadBasicUserProfile |
-                                                                          ApplicationScopes.ReadDestinyInventoryAndVault |
+                                                                          ApplicationScopes
                                                                           ApplicationScopes.MoveEquipDestinyItems;
 
                     bungieBuilder.ClientConfiguration
@@ -95,13 +95,8 @@ public abstract class Program
                             var includeTypes = new[]
                             {
                                 DefinitionsEnum.DestinyActivityDefinition,
-                                // DefinitionsEnum.DestinyActivityModeDefinition,
-                                // DefinitionsEnum.DestinyActivityTypeDefinition,
                                 DefinitionsEnum.DestinyCollectibleDefinition,
                                 DefinitionsEnum.DestinyInventoryItemDefinition,
-                                // DefinitionsEnum.DestinyMetricDefinition,
-                                // DefinitionsEnum.DestinyObjectiveDefinition,
-                                // DefinitionsEnum.DestinyRecordDefinition,
                                 DefinitionsEnum.DestinyVendorDefinition
                             };
 
@@ -116,8 +111,6 @@ public abstract class Program
                 .AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    // options.DefaultChallengeScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
-                    // options.DefaultAuthenticateScheme = BungieNetAuthenticationDefaults.AuthenticationScheme;
                 })
                 .AddCookie()
                 .AddBungieNet(options =>

@@ -16,14 +16,14 @@ public static class AuthRoute
         group.MapGet("/bungie/{discordId}",
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
             async (HttpContext httpContext, ulong discordId) =>
-        {
-            await httpContext.ChallengeAsync(
-                "BungieNet",
-                new AuthenticationProperties
-                {
-                    RedirectUri = $"auth/bungie/{discordId}/post_callback/"
-                });
-        });
+            {
+                await httpContext.ChallengeAsync(
+                    "BungieNet",
+                    new AuthenticationProperties
+                    {
+                        RedirectUri = $"auth/bungie/{discordId}/post_callback/"
+                    });
+            });
 
         group.MapGet("/bungie/{discordId}/post_callback",
             async (HttpContext httpContext, DbManager db, ulong discordId) =>
@@ -42,7 +42,8 @@ public static class AuthRoute
                 var baseTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day,
                     nowTime.Hour, nowTime.Minute, nowTime.Second);
 
-                var user = await db.Users.Include(user => user.BungieProfiles).FirstOrDefaultAsync(x => x.Id == discordId);
+                var user = await db.Users.Include(user => user.BungieProfiles)
+                    .FirstOrDefaultAsync(x => x.Id == discordId);
                 var addUser = false;
                 var addBungieUser = false;
 
