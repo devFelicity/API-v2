@@ -2,6 +2,7 @@
 using API.Contexts;
 using API.Contexts.Objects;
 using API.Services;
+using API.Util;
 using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -11,23 +12,65 @@ namespace API.Routes;
 
 public static class AuthRoute
 {
+    private static readonly TimedDictionary<ulong, string> AuthCache = new(TimeSpan.FromMinutes(2));
+
     public static void MapAuth(this RouteGroupBuilder group)
     {
-        group.MapGet("/bungie/{discordId}",
+        group.MapGet("/bungie/{discordId}/{service}",
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
-            async (HttpContext httpContext, ulong discordId) =>
+            async (HttpContext httpContext, ulong discordId, string service) =>
             {
+                switch (service)
+                {
+                    case "felicity":
+                    case "lostsector":
+                        lock (AuthCache)
+                        {
+                            AuthCache.Add(discordId, service);
+                        }
+
+                        break;
+                    default:
+                        Results.BadRequest("Unknown service type.");
+                        break;
+                }
+
+                const string cookieName = ".AspNetCore.Cookies";
+
+                var existingCookie = httpContext.Request.Cookies[cookieName];
+
+                if (existingCookie != null)
+                {
+                    var expiredCookie = new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(-1)
+                    };
+
+                    httpContext.Response.Cookies.Append(cookieName, existingCookie, expiredCookie);
+                }
+
                 await httpContext.ChallengeAsync(
                     "BungieNet",
                     new AuthenticationProperties
                     {
-                        RedirectUri = $"auth/bungie/{discordId}/post_callback/"
+                        RedirectUri = $"auth/bungie/{discordId}/post_callback"
                     });
             });
 
         group.MapGet("/bungie/{discordId}/post_callback",
             async (HttpContext httpContext, DbManager db, ulong discordId) =>
             {
+                string? service;
+
+                lock (AuthCache)
+                {
+                    AuthCache.TryGetValue(discordId, out service);
+                }
+
+                if (string.IsNullOrEmpty(service))
+                    return Results.BadRequest(
+                        "User not found in cache. Please try running the register command again.");
+
                 var claim = httpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
                 if (claim is null)
                     return TypedResults.Redirect("https://tryfelicity.one/auth_failure", true);
@@ -53,10 +96,23 @@ public static class AuthRoute
 
                     user = new User
                     {
-                        Id = discordId,
-                        RegisteredFelicity = true,
-                        RegisteredLostSector = false
+                        Id = discordId
                     };
+                }
+
+                switch (service)
+                {
+                    case "felicity":
+                        user.RegisteredFelicity = true;
+                        break;
+                    case "lostsector":
+                        user.RegisteredLostSector = true;
+                        break;
+                }
+
+                lock (AuthCache)
+                {
+                    AuthCache.Remove(discordId);
                 }
 
                 BungieProfile? bungieUser;
