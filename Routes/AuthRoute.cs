@@ -36,18 +36,13 @@ public static class AuthRoute
                 }
 
                 const string cookieName = ".AspNetCore.Cookies";
-
                 var existingCookie = httpContext.Request.Cookies[cookieName];
 
                 if (existingCookie != null)
-                {
-                    var expiredCookie = new CookieOptions
+                    httpContext.Response.Cookies.Append(cookieName, existingCookie, new CookieOptions
                     {
                         Expires = DateTime.Now.AddDays(-1)
-                    };
-
-                    httpContext.Response.Cookies.Append(cookieName, existingCookie, expiredCookie);
-                }
+                    });
 
                 await httpContext.ChallengeAsync(
                     "BungieNet",
