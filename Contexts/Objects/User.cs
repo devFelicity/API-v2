@@ -6,7 +6,7 @@ namespace API.Contexts.Objects;
 
 public partial class User
 {
-    public ulong Id { get; set; }
+    public long Id { get; set; }
 
     public DateTime? LastCommand { get; set; }
 
