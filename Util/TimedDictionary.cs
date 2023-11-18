@@ -41,18 +41,17 @@ public class TimedDictionary<TKey, TValue> where TKey : notnull
         }
     }
 
-    public bool TryGetValue(TKey key, out TValue? value)
+    public void TryGetValue(TKey key, out TValue? value)
     {
         lock (_dictionary)
         {
             if (_expirationTimes.TryGetValue(key, out var expirationTime) && expirationTime > DateTime.Now)
             {
                 value = _dictionary[key];
-                return true;
+                return;
             }
 
             value = default;
-            return false;
         }
     }
 

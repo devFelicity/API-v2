@@ -1,4 +1,6 @@
 ﻿// ReSharper disable PartialTypeWithSinglePart
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace API.Contexts.Objects;
 

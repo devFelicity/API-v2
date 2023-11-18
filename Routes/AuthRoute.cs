@@ -18,7 +18,7 @@ public static class AuthRoute
     {
         group.MapGet("/bungie/{discordId}/{service}",
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
-            async (HttpContext httpContext, ulong discordId, string service) =>
+            (HttpContext httpContext, ulong discordId, string service) =>
             {
                 switch (service)
                 {
@@ -44,7 +44,7 @@ public static class AuthRoute
                         Expires = DateTime.Now.AddDays(-1)
                     });
 
-                await httpContext.ChallengeAsync(
+                return httpContext.ChallengeAsync(
                     "BungieNet",
                     new AuthenticationProperties
                     {

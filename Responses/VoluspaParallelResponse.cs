@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Global

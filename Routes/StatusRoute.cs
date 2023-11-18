@@ -5,8 +5,6 @@ using DotNetBungieAPI.Service.Abstractions;
 
 namespace API.Routes;
 
-#pragma warning disable IDE0300
-
 public static class StatusRoute
 {
     private const string RouteName = "StatusRoute";
@@ -21,24 +19,24 @@ public static class StatusRoute
                 ErrorCode = ErrorCode.Success,
                 ErrorStatus = "Success",
                 Message = "Felicity.Api.Status",
-                Response = new StatusResponse[]
-                {
-                    new()
+                Response =
+                [
+                    new StatusResponse
                     {
                         Name = "Felicity.Api",
                         Alive = IsFelicityApiAlive(httpContext)
                     },
-                    new()
+                    new StatusResponse
                     {
                         Name = "Felicity",
                         Alive = IsFelicityAlive()
                     },
-                    new()
+                    new StatusResponse
                     {
                         Name = "Bungie",
                         Alive = await IsBungieAlive(bungieClient)
                     }
-                }
+                ]
             };
 
             return TypedResults.Json(statusResponse, Common.JsonSerializerOptions);
@@ -68,7 +66,7 @@ public static class StatusRoute
             ? "http://localhost:5050/health"
             : "http://felicity/health";
 
-        try 
+        try
         {
             using var client = new HttpClient();
             var response = client.GetAsync(url).Result;

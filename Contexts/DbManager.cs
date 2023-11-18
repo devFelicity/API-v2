@@ -1,6 +1,8 @@
 ﻿using API.Contexts.Objects;
 using Microsoft.EntityFrameworkCore;
 
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+
 namespace API.Contexts;
 
 public class DbManager : DbContext
@@ -51,7 +53,6 @@ public class DbManager : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MembershipId).HasColumnName("membership_id");
-            entity.Property(e => e.MembershipType).HasColumnName("membership_type");
             entity.Property(e => e.NeverExpire).HasColumnName("never_expire");
             entity.Property(e => e.OauthToken).HasColumnName("oauth_token");
             entity.Property(e => e.RefreshExpires)
@@ -62,11 +63,6 @@ public class DbManager : DbContext
                 .HasColumnType("timestamp(0) without time zone")
                 .HasColumnName("token_expires");
             entity.Property(e => e.UserId).HasColumnName("user_id");
-
-            entity.HasOne(d => d.User).WithMany(p => p.BungieProfiles)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("bungie_profile_user_id_foreign");
         });
 
         modelBuilder.Entity<LostSector>(entity =>
