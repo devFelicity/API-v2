@@ -36,7 +36,7 @@ public abstract class Program
             .CreateLogger();
 
         Variables.Environment = Debugger.IsAttached ? Environment.Development : Environment.Production;
-
+        
         try
         {
             EnsureDirectoryExists("Logs");
@@ -47,6 +47,9 @@ public abstract class Program
             builder.Host.UseSerilog();
 
             DiscordTools.Initialize(builder.Configuration);
+
+            Variables.SecurityKey = builder.Configuration["SecurityKey"] ??
+                                    throw new Exception("Security Key not configured.");
 
             var dbDataSource = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("PostgreSQL"))
                 .Build();

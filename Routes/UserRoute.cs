@@ -1,5 +1,7 @@
-﻿using API.Contexts;
+﻿using System.Reflection.Metadata;
+using API.Contexts;
 using API.Responses;
+using API.Util;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Routes;
@@ -21,11 +23,24 @@ public static class UserRoute
             return TypedResults.Ok(response);
         });
 
-        group.MapDelete("/remove/{discordId}", async (DbManager db, ulong discordId) =>
+        group.MapDelete("/remove/{discordId}", async (HttpContext httpContext, DbManager db, ulong discordId) =>
         {
             var response = new UserResponse();
 
-            var targetUser = db.Users.Include(x => x.BungieProfiles).FirstOrDefault(x => x.Id == discordId);
+            if (httpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                if (!authHeader.ToString().ToLower().Equals("Bearer " + Variables.SecurityKey))
+                {
+                    response.ErrorCode = ErrorCode.NotAuthorized;
+                    response.ErrorStatus = "Request not authorized.";
+                    response.Message = "Felicity.Api.User";
+                    return TypedResults.Ok(response);
+                }
+
+            var userId = UserExtensions.SignId(discordId);
+
+            var targetUser = db.Users
+                .Include(x => x.BungieProfiles)
+                .FirstOrDefault(x => x.Id == userId);
 
             if (targetUser == null)
             {

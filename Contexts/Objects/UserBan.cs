@@ -6,7 +6,7 @@ namespace API.Contexts.Objects;
 
 public partial class UserBan
 {
-    public ulong UserId { get; set; }
+    public long UserId { get; set; }
 
     public DateTime BanTime { get; set; }
 

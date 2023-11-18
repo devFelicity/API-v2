@@ -12,7 +12,7 @@ namespace API.Routes;
 
 public static class AuthRoute
 {
-    private static readonly TimedDictionary<ulong, string> AuthCache = new(TimeSpan.FromMinutes(2));
+    private static readonly TimedDictionary<long, string> AuthCache = new(TimeSpan.FromMinutes(2));
 
     public static void MapAuth(this RouteGroupBuilder group)
     {
@@ -20,13 +20,15 @@ public static class AuthRoute
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
             (HttpContext httpContext, ulong discordId, string service) =>
             {
+                var userId = UserExtensions.SignId(discordId);
+
                 switch (service)
                 {
                     case "felicity":
                     case "lostsector":
                         lock (AuthCache)
                         {
-                            AuthCache.Add(discordId, service);
+                            AuthCache.Add(userId, service);
                         }
 
                         break;
@@ -35,14 +37,14 @@ public static class AuthRoute
                         break;
                 }
 
-                const string cookieName = ".AspNetCore.Cookies";
-                var existingCookie = httpContext.Request.Cookies[cookieName];
-
-                if (existingCookie != null)
-                    httpContext.Response.Cookies.Append(cookieName, existingCookie, new CookieOptions
-                    {
-                        Expires = DateTime.Now.AddDays(-1)
-                    });
+                // const string cookieName = ".AspNetCore.Cookies";
+                // var existingCookie = httpContext.Request.Cookies[cookieName];
+                //
+                // if (existingCookie != null)
+                //     httpContext.Response.Cookies.Append(cookieName, existingCookie, new CookieOptions
+                //     {
+                //         Expires = DateTime.Now.AddDays(-1)
+                //     });
 
                 return httpContext.ChallengeAsync(
                     "BungieNet",
@@ -56,10 +58,11 @@ public static class AuthRoute
             async (HttpContext httpContext, DbManager db, ulong discordId) =>
             {
                 string? service;
+                var userId = UserExtensions.SignId(discordId);
 
                 lock (AuthCache)
                 {
-                    AuthCache.TryGetValue(discordId, out service);
+                    AuthCache.TryGetValue(userId, out service);
                 }
 
                 if (string.IsNullOrEmpty(service))
@@ -81,7 +84,7 @@ public static class AuthRoute
                     nowTime.Hour, nowTime.Minute, nowTime.Second);
 
                 var user = await db.Users.Include(user => user.BungieProfiles)
-                    .FirstOrDefaultAsync(x => x.Id == discordId);
+                    .FirstOrDefaultAsync(x => x.Id == userId);
                 var addUser = false;
                 var addBungieUser = false;
 
@@ -91,7 +94,7 @@ public static class AuthRoute
 
                     user = new User
                     {
-                        Id = discordId
+                        Id = userId
                     };
                 }
 
@@ -107,7 +110,7 @@ public static class AuthRoute
 
                 lock (AuthCache)
                 {
-                    AuthCache.Remove(discordId);
+                    AuthCache.Remove(userId);
                 }
 
                 BungieProfile? bungieUser;
@@ -119,7 +122,7 @@ public static class AuthRoute
 
                     bungieUser = new BungieProfile
                     {
-                        UserId = discordId,
+                        UserId = userId,
                         MembershipId = token.MembershipId
                     };
                 }
@@ -130,7 +133,7 @@ public static class AuthRoute
                     if (bungieUser == null)
                     {
                         addBungieUser = true;
-                        bungieUser = new BungieProfile { UserId = discordId, MembershipId = token.MembershipId };
+                        bungieUser = new BungieProfile { UserId = userId, MembershipId = token.MembershipId };
                     }
                 }
 
@@ -145,7 +148,7 @@ public static class AuthRoute
 
                 await db.SaveChangesAsync();
 
-                return TypedResults.Redirect("https://tryfelicity.one/auth_success", true);
+                return TypedResults.Redirect("https://tryfelicity.one/auth_success", false, true);
             });
     }
 }

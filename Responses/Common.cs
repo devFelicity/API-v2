@@ -9,6 +9,7 @@ public enum ErrorCode : long
     UnknownError = 0,
     Success = 1,
     QueryFailed = 400,
+    NotAuthorized = 401,
     InvalidParameters = 1000,
     ParameterMissing = 1001,
     ParameterInvalid = 1002,

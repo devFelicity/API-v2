@@ -6,7 +6,7 @@ namespace API.Contexts.Objects;
 
 public partial class VendorUser
 {
-    public ulong UserId { get; set; }
+    public long UserId { get; set; }
 
     public long VendorId { get; set; }
 
