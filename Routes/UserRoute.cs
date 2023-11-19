@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using API.Contexts;
+﻿using API.Contexts;
 using API.Responses;
 using API.Util;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +19,29 @@ public static class UserRoute
                 Response = [.. db.Users]
             };
 
-            return TypedResults.Ok(response);
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
+        });
+
+        group.MapGet("/test/{discordId}", (DbManager db, ulong discordId) =>
+        {
+            var user = db.Users.FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
+            var response = new UserResponse();
+
+            if (user == null)
+            {
+                response.ErrorCode = ErrorCode.QueryFailed;
+                response.ErrorStatus = "User not found.";
+                response.Message = "Felicity.Api.User";
+
+                return TypedResults.Json(response, Common.JsonSerializerOptions);
+            }
+
+            response.ErrorCode = ErrorCode.Success;
+            response.ErrorStatus = "Success";
+            response.Message = "Felicity.Api.User";
+            response.Response = [user];
+
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
 
         group.MapDelete("/remove/{discordId}", async (HttpContext httpContext, DbManager db, ulong discordId) =>
@@ -33,7 +54,7 @@ public static class UserRoute
                     response.ErrorCode = ErrorCode.NotAuthorized;
                     response.ErrorStatus = "Request not authorized.";
                     response.Message = "Felicity.Api.User";
-                    return TypedResults.Ok(response);
+                    return TypedResults.Json(response, Common.JsonSerializerOptions);
                 }
 
             var userId = UserExtensions.SignId(discordId);
@@ -48,7 +69,7 @@ public static class UserRoute
                 response.ErrorStatus = "User not found.";
                 response.Message = "Felicity.Api.User";
 
-                return TypedResults.Ok(response);
+                return TypedResults.Json(response, Common.JsonSerializerOptions);
             }
 
             if (targetUser.BungieProfiles.Count > 0)
@@ -62,7 +83,7 @@ public static class UserRoute
             response.ErrorStatus = "Success";
             response.Message = "Felicity.Api.User";
 
-            return TypedResults.Ok(response);
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
     }
 }
