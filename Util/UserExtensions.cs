@@ -1,4 +1,6 @@
-﻿namespace API.Util;
+﻿// ReSharper disable UnusedMember.Global
+
+namespace API.Util;
 
 public static class UserExtensions
 {
