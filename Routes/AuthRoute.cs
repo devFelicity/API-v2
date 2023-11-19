@@ -1,6 +1,9 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using System.Text.Json;
 using API.Contexts;
 using API.Contexts.Objects;
+using API.Responses;
 using API.Services;
 using API.Util;
 using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
@@ -14,14 +17,30 @@ public static class AuthRoute
 {
     private static readonly TimedDictionary<long, string> AuthCache = new(TimeSpan.FromMinutes(2));
 
+    [SuppressMessage("ReSharper", "RouteTemplates.RouteParameterIsNotPassedToMethod")]
     public static void MapAuth(this RouteGroupBuilder group)
     {
         group.MapGet("/bungie/{discordId}/{service}",
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
-            (HttpContext httpContext, ulong discordId, string service) =>
+            async (context) =>
             {
+                if (!ulong.TryParse(context.Request.RouteValues["discordId"]!.ToString(), out var discordId))
+                {
+                    var response = new UserResponse
+                    {
+                        ErrorCode = ErrorCode.InvalidParameters,
+                        ErrorStatus = "Unknown Discord ID.",
+                        Message = "Felicity.Api.Auth"
+                    };
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(response,
+                        Common.JsonSerializerOptions));
+                    return;
+                }
+
                 var userId = UserExtensions.SignId(discordId);
 
+                var service = context.Request.RouteValues["service"]!.ToString();
+                
                 switch (service)
                 {
                     case "felicity":
@@ -33,20 +52,18 @@ public static class AuthRoute
 
                         break;
                     default:
-                        Results.BadRequest("Unknown service type.");
-                        break;
+                        var response = new UserResponse
+                        {
+                            ErrorCode = ErrorCode.InvalidParameters,
+                            ErrorStatus = "Unknown service type.",
+                            Message = "Felicity.Api.Auth"
+                        };
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(response,
+                            Common.JsonSerializerOptions));
+                        return;
                 }
 
-                // const string cookieName = ".AspNetCore.Cookies";
-                // var existingCookie = httpContext.Request.Cookies[cookieName];
-                //
-                // if (existingCookie != null)
-                //     httpContext.Response.Cookies.Append(cookieName, existingCookie, new CookieOptions
-                //     {
-                //         Expires = DateTime.Now.AddDays(-1)
-                //     });
-
-                return httpContext.ChallengeAsync(
+                await context.ChallengeAsync(
                     "BungieNet",
                     new AuthenticationProperties
                     {
