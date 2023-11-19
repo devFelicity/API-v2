@@ -36,7 +36,7 @@ public abstract class Program
             .CreateLogger();
 
         Variables.Environment = Debugger.IsAttached ? Environment.Development : Environment.Production;
-        
+
         try
         {
             EnsureDirectoryExists("Logs");
@@ -69,7 +69,7 @@ public abstract class Program
                                       throw new Exception("Bungie API Key not configured.");
 
                     bungieBuilder.ClientConfiguration
-                        .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
+                            .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
 
                     bungieBuilder.ClientConfiguration
                             .ClientSecret = builder.Configuration["Bungie:ClientSecret"] ??
