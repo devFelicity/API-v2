@@ -1,6 +1,7 @@
 ﻿using API.Contexts;
 using API.Responses;
 using API.Util;
+using DotNetBungieAPI.Service.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Routes;
@@ -22,9 +23,10 @@ public static class UserRoute
             return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
 
-        group.MapGet("/test/{discordId}", (DbManager db, ulong discordId) =>
+        group.MapGet("/test/{discordId}", async (DbManager db, IBungieClient bungieClient, ulong discordId) =>
         {
-            var user = db.Users.FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
+            var user = db.Users.Include(u => u.BungieProfiles).FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
+            
             var response = new UserResponse();
 
             if (user == null)
@@ -35,6 +37,9 @@ public static class UserRoute
 
                 return TypedResults.Json(response, Common.JsonSerializerOptions);
             }
+
+            if (user.BungieProfiles.First().DestinyMembershipId == 0)
+                await user.BungieProfiles.First().UpdateMembership(bungieClient);
 
             response.ErrorCode = ErrorCode.Success;
             response.ErrorStatus = "Success";

@@ -3,6 +3,7 @@ using API.Contexts;
 using API.Responses;
 using API.Routes;
 using API.Services;
+using API.Tasks;
 using API.Util;
 using DotNetBungieAPI;
 using DotNetBungieAPI.AspNet.Security.OAuth.Providers;
@@ -109,7 +110,10 @@ public abstract class Program
                                     x.IgnoreDefinitionType(defType);
                         });
                 })
-                .AddHostedService<BungieClientService>();
+                .AddHostedService<BungieClientService>()
+                .AddHostedService<SchedulerService>()
+                .AddHostedService<UserRefresh>()
+                .AddHostedService<VendorsGunsmith>();
 
             builder.Services
                 .AddAuthentication(options =>
@@ -165,6 +169,7 @@ public abstract class Program
 
             app.MapGroup("/auth").MapAuth();
             app.MapGroup("/manifest").MapManifest();
+            app.MapGroup("/tasks").MapTasks();
             app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();
 

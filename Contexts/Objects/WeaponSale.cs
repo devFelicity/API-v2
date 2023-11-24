@@ -12,7 +12,7 @@ public partial class WeaponSale
 
     public long ItemId { get; set; }
 
-    public long ItemPerks { get; set; }
+    public List<long> ItemPerks { get; set; } = [];
 
     public int RequiredRank { get; set; }
 

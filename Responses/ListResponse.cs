@@ -2,7 +2,7 @@
 
 namespace API.Responses;
 
-public class ManifestResponse
+public class ListResponse
 {
     public ErrorCode ErrorCode { get; set; } = ErrorCode.UnknownError;
 
@@ -10,5 +10,5 @@ public class ManifestResponse
 
     public string Message { get; set; } = "Unknown";
 
-    public string Response { get; set; } = string.Empty;
+    public List<object> Response { get; set; } = [];
 }
