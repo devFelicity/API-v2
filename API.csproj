@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Webhook" Version="3.12.0" />
+    <PackageReference Include="Discord.Net.Webhook" Version="3.13.0" />
     <PackageReference Include="DotNetBungieAPI" Version="2.12.2" />
     <PackageReference Include="DotNetBungieAPI.AspNet.Security.OAuth.Providers" Version="1.0.2" />
     <PackageReference Include="DotNetBungieAPI.DefinitionProvider.Sqlite" Version="1.5.3" />
