@@ -14,5 +14,7 @@ public partial class VendorUser
 
     public int Resets { get; set; }
 
+    public int Id { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

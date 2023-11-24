@@ -63,6 +63,8 @@ public class DbManager : DbContext
                 .HasColumnType("timestamp(0) without time zone")
                 .HasColumnName("token_expires");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.DestinyMembershipId).HasColumnName("destiny_id");
+            entity.Property(e => e.DestinyMembershipType).HasColumnName("destiny_type");
         });
 
         modelBuilder.Entity<LostSector>(entity =>
@@ -177,15 +179,14 @@ public class DbManager : DbContext
 
         modelBuilder.Entity<VendorUser>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("vendor_user_pkey");
+            entity.HasKey(e => e.Id).HasName("vendor_user_pkey");
 
             entity.ToTable("vendor_user");
 
             entity.HasIndex(e => new { e.VendorId, e.Resets }, "vendor_user_vendor_id_resets_index");
 
-            entity.Property(e => e.UserId)
-                .ValueGeneratedNever()
-                .HasColumnName("user_id");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.Rank).HasColumnName("rank");
             entity.Property(e => e.Resets).HasColumnName("resets");
             entity.Property(e => e.VendorId).HasColumnName("vendor_id");

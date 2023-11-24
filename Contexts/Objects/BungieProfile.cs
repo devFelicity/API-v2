@@ -2,6 +2,8 @@
 // ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
+using DotNetBungieAPI.Models;
+
 namespace API.Contexts.Objects;
 
 public partial class BungieProfile
@@ -21,4 +23,8 @@ public partial class BungieProfile
     public bool NeverExpire { get; set; }
 
     public int Id { get; set; }
+
+    public long DestinyMembershipId { get; set; }
+
+    public BungieMembershipType DestinyMembershipType { get; set; }
 }

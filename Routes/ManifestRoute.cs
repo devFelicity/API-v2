@@ -8,7 +8,7 @@ public static class ManifestRoute
     {
         group.MapGet("/", () =>
         {
-            var response = new ManifestResponse();
+            var response = new StringResponse();
             if (string.IsNullOrEmpty(Variables.ManifestVersion))
             {
                 response.ErrorStatus = "No manifest loaded.";

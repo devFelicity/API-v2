@@ -67,11 +67,11 @@ public static class AuthRoute
                     "BungieNet",
                     new AuthenticationProperties
                     {
-                        RedirectUri = $"auth/bungie/{discordId}/post_callback"
+                        RedirectUri = $"auth/bungie/post_callback/{discordId}"
                     });
             });
 
-        group.MapGet("/bungie/{discordId}/post_callback",
+        group.MapGet("/bungie/post_callback/{discordId}",
             async (HttpContext httpContext, DbManager db, ulong discordId) =>
             {
                 string? service;

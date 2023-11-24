@@ -10,6 +10,7 @@ public class BungieClientService(
     : BackgroundService
 {
     private bool _isUpdating;
+    private const string ServiceName = "BungieClientService";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -33,7 +34,7 @@ public class BungieClientService(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Exception in BungieClientStartupService");
+            logger.LogError(e, "Exception in {service}", ServiceName);
         }
     }
 
