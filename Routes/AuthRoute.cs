@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using API.Contexts;
 using API.Contexts.Objects;
@@ -11,16 +10,19 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
+// ReSharper disable RouteTemplates.RouteParameterIsNotPassedToMethod
+
 namespace API.Routes;
 
 public static class AuthRoute
 {
     private static readonly TimedDictionary<long, string> AuthCache = new(TimeSpan.FromMinutes(2));
 
-    [SuppressMessage("ReSharper", "RouteTemplates.RouteParameterIsNotPassedToMethod")]
     public static void MapAuth(this RouteGroupBuilder group)
     {
+#pragma warning disable ASP0018
         group.MapGet("/bungie/{discordId}/{service}",
+#pragma warning restore ASP0018
             [Authorize(AuthenticationSchemes = BungieNetAuthenticationDefaults.AuthenticationScheme)]
             async (context) =>
             {
@@ -40,7 +42,7 @@ public static class AuthRoute
                 var userId = UserExtensions.SignId(discordId);
 
                 var service = context.Request.RouteValues["service"]!.ToString();
-                
+
                 switch (service)
                 {
                     case "felicity":

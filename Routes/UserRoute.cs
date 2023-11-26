@@ -25,8 +25,9 @@ public static class UserRoute
 
         group.MapGet("/test/{discordId}", async (DbManager db, IBungieClient bungieClient, ulong discordId) =>
         {
-            var user = db.Users.Include(u => u.BungieProfiles).FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
-            
+            var user = db.Users.Include(u => u.BungieProfiles)
+                .FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
+
             var response = new UserResponse();
 
             if (user == null)

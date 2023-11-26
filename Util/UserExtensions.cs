@@ -27,7 +27,7 @@ public static class UserExtensions
     public static async Task UpdateMembership(this BungieProfile user, IBungieClient bungieClient)
     {
         var logger = LogService.CreateLogger("UpdateMembership");
-        
+
         try
         {
             var latestProfile = new DestinyProfileUserInfoCard();

@@ -70,7 +70,7 @@ public abstract class Program
                                       throw new Exception("Bungie API Key not configured.");
 
                     bungieBuilder.ClientConfiguration
-                            .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
+                        .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
 
                     bungieBuilder.ClientConfiguration
                             .ClientSecret = builder.Configuration["Bungie:ClientSecret"] ??

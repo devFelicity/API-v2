@@ -22,7 +22,7 @@ public class VendorsGunsmith(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            while(TaskSchedulerService.Tasks.First(t => t.Name == "UserRefresh").IsRunning)
+            while (TaskSchedulerService.Tasks.First(t => t.Name == "UserRefresh").IsRunning)
                 await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(1), stoppingToken);
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
