@@ -206,6 +206,7 @@ public class DbManager : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.ItemPerks).HasColumnName("item_perks");
+            entity.Property(e => e.IsAvailable).HasColumnName("is_available");
             entity.Property(e => e.QueryTime)
                 .HasColumnType("timestamp(0) without time zone")
                 .HasColumnName("query_time");

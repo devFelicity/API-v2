@@ -9,8 +9,8 @@ public class BungieClientService(
     ILogger<BungieClientService> logger)
     : BackgroundService
 {
-    private bool _isUpdating;
     private const string ServiceName = "BungieClientService";
+    private bool _isUpdating;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

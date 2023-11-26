@@ -70,7 +70,7 @@ public abstract class Program
                                       throw new Exception("Bungie API Key not configured.");
 
                     bungieBuilder.ClientConfiguration
-                            .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
+                        .ClientId = Convert.ToInt32(builder.Configuration["Bungie:ClientId"]);
 
                     bungieBuilder.ClientConfiguration
                             .ClientSecret = builder.Configuration["Bungie:ClientSecret"] ??
@@ -172,6 +172,7 @@ public abstract class Program
             app.MapGroup("/tasks").MapTasks();
             app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();
+            app.MapGroup("/vendor").MapVendors();
 
             app.MapGet("/pp", async () => TypedResults.Json(await Voluspa.ParallelQuery.GetResponse()));
 

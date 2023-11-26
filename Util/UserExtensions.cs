@@ -2,9 +2,9 @@
 
 using API.Contexts.Objects;
 using API.Services;
-using API.Tasks;
 using DotNetBungieAPI.Models;
 using DotNetBungieAPI.Models.Authorization;
+using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.User;
 using DotNetBungieAPI.Service.Abstractions;
 
@@ -27,7 +27,7 @@ public static class UserExtensions
     public static async Task UpdateMembership(this BungieProfile user, IBungieClient bungieClient)
     {
         var logger = LogService.CreateLogger("UpdateMembership");
-        
+
         try
         {
             var latestProfile = new DestinyProfileUserInfoCard();
@@ -49,12 +49,19 @@ public static class UserExtensions
         }
     }
 
+    public static bool NeedsRefresh(this BungieProfile user)
+    {
+        return user.TokenExpires.ToUniversalTime() < DateTime.UtcNow &&
+               user.RefreshExpires.ToUniversalTime() > DateTime.UtcNow;
+    }
+
     public static async Task RefreshToken(
         this BungieProfile user,
         IBungieClient bungieClient,
-        DateTime nowTime,
-        ILogger<UserRefresh> logger)
+        DateTime nowTime)
     {
+        var logger = LogService.CreateLogger("RefreshToken");
+
         try
         {
             var refreshedUser = await bungieClient.Authorization.RenewToken(user.GetTokenData());
@@ -72,6 +79,32 @@ public static class UserExtensions
         {
             logger.LogError(e, "Failed to refresh token for {id}", user.MembershipId);
         }
+    }
+
+    public static async Task<long> GetLatestCharacter(
+        this BungieProfile user, IBungieClient bungieClient)
+    {
+        var logger = LogService.CreateLogger("GetLatestCharacter");
+
+        try
+        {
+            var characterQuery = await bungieClient.ApiAccess.Destiny2.GetProfile(
+                user.DestinyMembershipType,
+                user.DestinyMembershipId,
+                [DestinyComponentType.Characters],
+                user.GetTokenData());
+
+            var latestCharacter = characterQuery.Response.Characters.Data.Values.MaxBy(x => x.DateLastPlayed);
+
+            if (latestCharacter != null)
+                return latestCharacter.CharacterId;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to get latest character for {id}", user.MembershipId);
+        }
+
+        return 0;
     }
 
     public static AuthorizationTokenData GetTokenData(this BungieProfile user)

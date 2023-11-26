@@ -12,11 +12,13 @@ public partial class WeaponSale
 
     public long ItemId { get; set; }
 
-    public List<long> ItemPerks { get; set; } = [];
+    public string ItemPerks { get; set; } = string.Empty;
 
     public int RequiredRank { get; set; }
 
     public int RequiredResets { get; set; }
 
     public int Id { get; set; }
+
+    public bool IsAvailable { get; set; }
 }
