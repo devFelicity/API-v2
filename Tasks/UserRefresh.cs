@@ -33,12 +33,11 @@ public class UserRefresh(
                 var users = await db.Users.Include(u => u.BungieProfiles).ToListAsync(stoppingToken);
                 var bungieProfiles = users.SelectMany(u => u.BungieProfiles)
                     // TODO: .Where(u => u.NeverExpire)
-                    .Where(u => u.TokenExpires.ToUniversalTime() < DateTime.UtcNow &&
-                                u.RefreshExpires.ToUniversalTime() > DateTime.UtcNow);
+                    .Where(u => u.NeedsRefresh());
 
                 foreach (var profile in bungieProfiles)
                 {
-                    await profile.RefreshToken(bungieClient, DateTime.Now, logger);
+                    await profile.RefreshToken(bungieClient, DateTime.Now);
 
                     if (profile.DestinyMembershipId == 0)
                         await profile.UpdateMembership(bungieClient);
@@ -70,7 +69,7 @@ public class UserRefresh(
                     {
                         var addBannerUser = false;
                         var bannerVendorUser = await db.VendorUsers.FirstOrDefaultAsync(
-                            vu => vu.User == user && vu.VendorId == DefinitionHashes.Vendors.LordSaladin,
+                            vu => vu.UserId == user.Id && vu.VendorId == DefinitionHashes.Vendors.LordSaladin,
                             stoppingToken);
 
                         if (bannerVendorUser == null)
@@ -97,7 +96,7 @@ public class UserRefresh(
                         var addTrialsUser = false;
 
                         var trialsVendorUser = await db.VendorUsers.FirstOrDefaultAsync(
-                            vu => vu.User == user && vu.VendorId == DefinitionHashes.Vendors.Saint14,
+                            vu => vu.UserId == user.Id && vu.VendorId == DefinitionHashes.Vendors.Saint14,
                             stoppingToken);
 
                         if (trialsVendorUser == null)
@@ -106,7 +105,7 @@ public class UserRefresh(
                             trialsVendorUser = new VendorUser
                             {
                                 User = user,
-                                VendorId = DefinitionHashes.Vendors.LordSaladin
+                                VendorId = DefinitionHashes.Vendors.Saint14
                             };
                         }
 

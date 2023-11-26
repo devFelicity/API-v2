@@ -172,6 +172,7 @@ public abstract class Program
             app.MapGroup("/tasks").MapTasks();
             app.MapGroup("/user").MapUsers();
             app.MapGroup("/status").MapStatus();
+            app.MapGroup("/vendor").MapVendors();
 
             app.MapGet("/pp", async () => TypedResults.Json(await Voluspa.ParallelQuery.GetResponse()));
 

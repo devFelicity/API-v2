@@ -23,45 +23,61 @@ public static class UserRoute
             return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
 
-        group.MapGet("/test/{discordId}", async (DbManager db, IBungieClient bungieClient, ulong discordId) =>
-        {
-            var user = db.Users.Include(u => u.BungieProfiles)
-                .FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
-
-            var response = new UserResponse();
-
-            if (user == null)
+        group.MapGet("/full/{discordId}",
+            async (HttpContext context, DbManager db, IBungieClient bungieClient, ulong discordId) =>
             {
-                response.ErrorCode = ErrorCode.QueryFailed;
-                response.ErrorStatus = "User not found.";
-                response.Message = "Felicity.Api.User";
-
-                return TypedResults.Json(response, Common.JsonSerializerOptions);
-            }
-
-            if (user.BungieProfiles.First().DestinyMembershipId == 0)
-                await user.BungieProfiles.First().UpdateMembership(bungieClient);
-
-            response.ErrorCode = ErrorCode.Success;
-            response.ErrorStatus = "Success";
-            response.Message = "Felicity.Api.User";
-            response.Response = [user];
-
-            return TypedResults.Json(response, Common.JsonSerializerOptions);
-        });
-
-        group.MapDelete("/remove/{discordId}", async (HttpContext httpContext, DbManager db, ulong discordId) =>
-        {
-            var response = new UserResponse();
-
-            if (httpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-                if (!authHeader.ToString().ToLower().Equals("Bearer " + Variables.SecurityKey))
+                var response = new UserResponse
                 {
-                    response.ErrorCode = ErrorCode.NotAuthorized;
-                    response.ErrorStatus = "Request not authorized.";
-                    response.Message = "Felicity.Api.User";
+                    Message = "Felicity.Api.User"
+                };
+
+                if (!context.IsAuthorized())
+                {
+                    response = new UserResponse
+                    {
+                        ErrorCode = ErrorCode.NotAuthorized,
+                        ErrorStatus = "Request not authorized."
+                    };
                     return TypedResults.Json(response, Common.JsonSerializerOptions);
                 }
+
+                var user = db.Users.Include(u => u.BungieProfiles)
+                    .FirstOrDefault(x => x.Id == UserExtensions.SignId(discordId));
+
+                if (user == null)
+                {
+                    response.ErrorCode = ErrorCode.QueryFailed;
+                    response.ErrorStatus = "User not found.";
+
+                    return TypedResults.Json(response, Common.JsonSerializerOptions);
+                }
+
+                if (user.BungieProfiles.First().DestinyMembershipId == 0)
+                    await user.BungieProfiles.First().UpdateMembership(bungieClient);
+
+                response.ErrorCode = ErrorCode.Success;
+                response.ErrorStatus = "Success";
+                response.Response = [user];
+
+                return TypedResults.Json(response, Common.JsonSerializerOptions);
+            });
+
+        group.MapDelete("/remove/{discordId}", async (HttpContext context, DbManager db, ulong discordId) =>
+        {
+            var response = new UserResponse
+            {
+                Message = "Felicity.Api.User"
+            };
+
+            if (!context.IsAuthorized())
+            {
+                response = new UserResponse
+                {
+                    ErrorCode = ErrorCode.NotAuthorized,
+                    ErrorStatus = "Request not authorized."
+                };
+                return TypedResults.Json(response, Common.JsonSerializerOptions);
+            }
 
             var userId = UserExtensions.SignId(discordId);
 
@@ -73,21 +89,27 @@ public static class UserRoute
             {
                 response.ErrorCode = ErrorCode.QueryFailed;
                 response.ErrorStatus = "User not found.";
-                response.Message = "Felicity.Api.User";
 
                 return TypedResults.Json(response, Common.JsonSerializerOptions);
             }
 
-            if (targetUser.BungieProfiles.Count > 0)
-                db.BungieProfiles.RemoveRange(targetUser.BungieProfiles);
+            if (db.UserBans.Any(x => x.User == targetUser))
+            {
+                await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
+                    $"Banned user {targetUser.Id} tried deleting profile.");
 
-            db.Users.Remove(targetUser);
+                response.ErrorCode = ErrorCode.QueryFailed;
+                response.ErrorStatus = "User is banned.";
+            }
+            else
+            {
+                db.Users.Remove(targetUser);
 
-            await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
 
-            response.ErrorCode = ErrorCode.Success;
-            response.ErrorStatus = "Success";
-            response.Message = "Felicity.Api.User";
+                response.ErrorCode = ErrorCode.Success;
+                response.ErrorStatus = "Success";
+            }
 
             return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
