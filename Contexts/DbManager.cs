@@ -56,11 +56,11 @@ public class DbManager : DbContext
             entity.Property(e => e.NeverExpire).HasColumnName("never_expire");
             entity.Property(e => e.OauthToken).HasColumnName("oauth_token");
             entity.Property(e => e.RefreshExpires)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("refresh_expires");
             entity.Property(e => e.RefreshToken).HasColumnName("refresh_token");
             entity.Property(e => e.TokenExpires)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("token_expires");
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.DestinyMembershipId).HasColumnName("destiny_id");
@@ -102,7 +102,7 @@ public class DbManager : DbContext
 
             entity.Property(e => e.Slug).HasColumnName("slug");
             entity.Property(e => e.LastUse)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("last_use");
             entity.Property(e => e.TotalUse).HasColumnName("total_use");
         });
@@ -129,7 +129,7 @@ public class DbManager : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.LastCommand)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("last_command");
             entity.Property(e => e.RegisteredFelicity).HasColumnName("registered_felicity");
             entity.Property(e => e.RegisteredLostSector).HasColumnName("registered_lostsector");
@@ -146,7 +146,7 @@ public class DbManager : DbContext
                 .HasColumnName("user_id");
             entity.Property(e => e.BanReason).HasColumnName("ban_reason");
             entity.Property(e => e.BanTime)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("ban_time");
 
             entity.HasOne(d => d.User).WithOne(p => p.UserBan)
@@ -208,7 +208,7 @@ public class DbManager : DbContext
             entity.Property(e => e.ItemPerks).HasColumnName("item_perks");
             entity.Property(e => e.IsAvailable).HasColumnName("is_available");
             entity.Property(e => e.QueryTime)
-                .HasColumnType("timestamp(0) without time zone")
+                .HasColumnType("timestamp(0) with time zone")
                 .HasColumnName("query_time");
             entity.Property(e => e.RequiredRank).HasColumnName("required_rank");
             entity.Property(e => e.RequiredResets).HasColumnName("required_resets");

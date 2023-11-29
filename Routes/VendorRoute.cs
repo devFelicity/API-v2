@@ -28,11 +28,11 @@ public static class VendorRoute
         var weaponSales = new List<WeaponSaleResponse>();
 
         // ReSharper disable once LoopCanBeConvertedToQuery
-        foreach (var weaponSale in dbWeaponSales)
+        foreach (var weaponSale in dbWeaponSales.OrderByDescending(x => x.QueryTime))
         {
             weaponSales.Add(new WeaponSaleResponse
             {
-                IsAvailable = true,
+                IsAvailable = weaponSale.IsAvailable,
                 ItemId = weaponSale.ItemId,
                 ItemPerks = JsonSerializer.Deserialize<List<List<uint>>>(weaponSale.ItemPerks) ?? [],
                 QueryTime = weaponSale.QueryTime,

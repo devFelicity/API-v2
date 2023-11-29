@@ -99,8 +99,6 @@ public static class AuthRoute
                 var token = context.Token;
 
                 var nowTime = DateTime.UtcNow;
-                var baseTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day,
-                    nowTime.Hour, nowTime.Minute, nowTime.Second);
 
                 var user = await db.Users.Include(user => user.BungieProfiles)
                     .FirstOrDefaultAsync(x => x.Id == userId);
@@ -158,8 +156,8 @@ public static class AuthRoute
 
                 bungieUser.OauthToken = token.AccessToken;
                 bungieUser.RefreshToken = token.RefreshToken;
-                bungieUser.TokenExpires = baseTime.AddSeconds(token.ExpiresIn);
-                bungieUser.RefreshExpires = baseTime.AddSeconds(token.RefreshExpiresIn);
+                bungieUser.TokenExpires = nowTime.AddSeconds(token.ExpiresIn);
+                bungieUser.RefreshExpires = nowTime.AddSeconds(token.RefreshExpiresIn);
 
                 if (addUser) db.Users.Add(user);
 
