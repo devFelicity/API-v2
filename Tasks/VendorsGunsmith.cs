@@ -64,7 +64,7 @@ public class VendorsGunsmith(
                         DestinyComponentType.VendorSales, DestinyComponentType.ItemReusablePlugs
                     ], vendorProfile.GetTokenData(), stoppingToken);
 
-                var queryTime = DateTime.Now;
+                var queryTime = DateTime.UtcNow;
 
                 foreach (var saleItemComponent in vendorQuery.Response.Sales.Data)
                 {

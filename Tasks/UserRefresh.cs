@@ -37,7 +37,7 @@ public class UserRefresh(
 
                 foreach (var profile in bungieProfiles)
                 {
-                    await profile.RefreshToken(bungieClient, DateTime.Now);
+                    await profile.RefreshToken(bungieClient, DateTime.UtcNow);
 
                     if (profile.DestinyMembershipId == 0)
                         await profile.UpdateMembership(bungieClient);
@@ -48,7 +48,7 @@ public class UserRefresh(
                 foreach (var user in users)
                 {
                     var userProfile =
-                        user.BungieProfiles.FirstOrDefault(p => p.TokenExpires.ToUniversalTime() < DateTime.Now);
+                        user.BungieProfiles.FirstOrDefault(p => p.TokenExpires < DateTime.UtcNow);
                     if (userProfile == null)
                         continue;
 

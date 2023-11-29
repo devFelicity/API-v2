@@ -51,8 +51,8 @@ public static class UserExtensions
 
     public static bool NeedsRefresh(this BungieProfile user)
     {
-        return user.TokenExpires.ToUniversalTime() < DateTime.UtcNow &&
-               user.RefreshExpires.ToUniversalTime() > DateTime.UtcNow;
+        return user.TokenExpires < DateTime.UtcNow &&
+               user.RefreshExpires > DateTime.UtcNow;
     }
 
     public static async Task RefreshToken(
@@ -113,9 +113,9 @@ public static class UserExtensions
         {
             AccessToken = user.OauthToken,
             RefreshToken = user.RefreshToken,
-            ExpiresIn = (int)(user.TokenExpires - DateTime.Now).TotalSeconds,
+            ExpiresIn = (int)(user.TokenExpires - DateTime.UtcNow).TotalSeconds,
             MembershipId = user.MembershipId,
-            RefreshExpiresIn = (int)(user.RefreshExpires - DateTime.Now).TotalSeconds,
+            RefreshExpiresIn = (int)(user.RefreshExpires - DateTime.UtcNow).TotalSeconds,
             TokenType = "Bearer"
         };
     }
