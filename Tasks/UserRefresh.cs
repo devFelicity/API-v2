@@ -33,7 +33,7 @@ public class UserRefresh(
                 var users = await db.Users.Include(u => u.BungieProfiles).ToListAsync(stoppingToken);
                 var bungieProfiles = users.SelectMany(u => u.BungieProfiles)
                     // TODO: .Where(u => u.NeverExpire)
-                    .Where(u => u.NeedsRefresh());
+                    .Where(u => u.NeedsRefresh(bungieClient).Result);
 
                 foreach (var profile in bungieProfiles)
                 {
@@ -48,7 +48,7 @@ public class UserRefresh(
                 foreach (var user in users)
                 {
                     var userProfile =
-                        user.BungieProfiles.FirstOrDefault(p => p.TokenExpires < DateTime.UtcNow);
+                        user.BungieProfiles.FirstOrDefault(p => p.TokenExpires > DateTime.UtcNow);
                     if (userProfile == null)
                         continue;
 
@@ -87,6 +87,8 @@ public class UserRefresh(
 
                         if (addBannerUser)
                             await db.VendorUsers.AddAsync(bannerVendorUser, stoppingToken);
+                        else
+                            db.VendorUsers.Update(bannerVendorUser);
                     }
 
                     // ReSharper disable once InvertIf
@@ -114,6 +116,8 @@ public class UserRefresh(
 
                         if (addTrialsUser)
                             await db.VendorUsers.AddAsync(trialsVendorUser, stoppingToken);
+                        else
+                            db.VendorUsers.Update(trialsVendorUser);
                     }
                 }
 

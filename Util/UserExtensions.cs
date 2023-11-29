@@ -49,8 +49,11 @@ public static class UserExtensions
         }
     }
 
-    public static bool NeedsRefresh(this BungieProfile user)
+    public static async Task<bool> NeedsRefresh(this BungieProfile user, IBungieClient bungieClient)
     {
+        if (user.DestinyMembershipId == 0)
+            await user.UpdateMembership(bungieClient);
+
         return user.TokenExpires < DateTime.UtcNow &&
                user.RefreshExpires > DateTime.UtcNow;
     }

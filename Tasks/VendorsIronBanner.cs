@@ -1,0 +1,85 @@
+﻿using API.Contexts;
+using API.Contexts.Objects;
+using API.Services;
+using API.Util;
+using DotNetBungieAPI.HashReferences;
+using DotNetBungieAPI.Service.Abstractions;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Tasks;
+
+public class VendorsIronBanner(
+    IServiceProvider services,
+    ILogger<VendorsIronBanner> logger,
+    IBungieClient bungieClient)
+    : BackgroundService
+{
+    private const string ServiceName = "VendorsIronBanner";
+    private const uint VendorId = DefinitionHashes.Vendors.LordSaladin;
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var scope = services.CreateScope();
+        var db =
+            scope.ServiceProvider
+                .GetRequiredService<DbManager>();
+
+        // TODO: raise this to 5/10 minutes
+        await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(2), stoppingToken);
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            while (TaskSchedulerService.Tasks.First(t => t.Name == "UserRefresh").IsRunning)
+                await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(1), stoppingToken);
+
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
+
+            try
+            {
+                var userList = new List<VendorUser?>
+                {
+                    db.VendorUsers.FirstOrDefault(x => x.VendorId == VendorId && x.Resets == 0 && x.Rank < 10),
+                    db.VendorUsers.FirstOrDefault(x => x.VendorId == VendorId && x.Resets == 1 && x.Rank < 10),
+                    db.VendorUsers.FirstOrDefault(x => x.VendorId == VendorId && x.Resets == 2 && x.Rank < 10)
+                };
+
+                for (var i = 0; i < userList.Count; i++)
+                {
+                    var targetUser = userList[i];
+
+                    if (targetUser == null)
+                        continue;
+
+                    logger.LogDebug("Using {id} for {vendor} at reset count {count}", targetUser.UserId, VendorId, i);
+
+                    var vendorUser = db.Users.Include(u => u.BungieProfiles)
+                        .FirstOrDefault(x => x.Id == targetUser.UserId);
+
+                    if (vendorUser == null)
+                    {
+                        logger.LogError("Vendor user not found.");
+                        return;
+                    }
+
+                    var vendorProfile = vendorUser.BungieProfiles.First();
+
+                    if (await vendorProfile.NeedsRefresh(bungieClient))
+                        await vendorProfile.RefreshToken(bungieClient, DateTime.UtcNow);
+
+                    await db.SaveChangesAsync(stoppingToken);
+
+                    await VendorTools.SingleVendorUpdate(bungieClient, db, vendorProfile, VendorId, i, stoppingToken);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception in {service}", ServiceName);
+            }
+
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = false;
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).LastRun = DateTime.UtcNow;
+
+            await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(60), stoppingToken);
+        }
+    }
+}
