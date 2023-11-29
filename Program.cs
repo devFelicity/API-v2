@@ -37,6 +37,7 @@ public abstract class Program
             .CreateLogger();
 
         Variables.Environment = Debugger.IsAttached ? Environment.Development : Environment.Production;
+        Variables.StartTime = DateTime.UtcNow;
 
         try
         {
@@ -113,7 +114,11 @@ public abstract class Program
                 .AddHostedService<BungieClientService>()
                 .AddHostedService<SchedulerService>()
                 .AddHostedService<UserRefresh>()
-                .AddHostedService<VendorsGunsmith>();
+                .AddHostedService<VendorsAdepts>()
+                .AddHostedService<VendorsGunsmith>()
+                .AddHostedService<VendorsIronBanner>()
+                .AddHostedService<VendorsTrials>()
+                .AddHostedService<VendorsWarTable>();
 
             builder.Services
                 .AddAuthentication(options =>

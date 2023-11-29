@@ -16,9 +16,15 @@ public class SchedulerService(
             TaskSchedulerService.Tasks.Add(new ScheduledTask
                 { Name = "UserRefresh", IsRunning = false, LastRun = null });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
+                { Name = "VendorsAdepts", IsRunning = false, LastRun = null });
+            TaskSchedulerService.Tasks.Add(new ScheduledTask
                 { Name = "VendorsGunsmith", IsRunning = false, LastRun = null });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsXur", IsRunning = false, LastRun = null });
+                { Name = "VendorsIronBanner", IsRunning = false, LastRun = null });
+            TaskSchedulerService.Tasks.Add(new ScheduledTask
+                { Name = "VendorsTrials", IsRunning = false, LastRun = null });
+            TaskSchedulerService.Tasks.Add(new ScheduledTask
+                { Name = "VendorsWarTable", IsRunning = false, LastRun = null });
         }
         catch (Exception e)
         {

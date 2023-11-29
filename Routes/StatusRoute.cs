@@ -17,7 +17,7 @@ public static class StatusRoute
             var statusResponse = new Status
             {
                 ErrorCode = ErrorCode.Success,
-                ErrorStatus = "Success",
+                ErrorStatus = $"Uptime: {DateTime.UtcNow - Variables.StartTime}",
                 Message = "Felicity.Api.Status",
                 Response =
                 [

@@ -2,6 +2,7 @@
 using API.Contexts;
 using API.Contexts.Objects;
 using API.Responses;
+using DotNetBungieAPI.HashReferences;
 
 namespace API.Routes;
 
@@ -21,6 +22,47 @@ public static class VendorRoute
 
             return TypedResults.Json(response, Common.JsonSerializerOptions);
         });
+
+        group.MapGet("/getAvailableWeapons", (DbManager db) =>
+        {
+            var response = new ListResponse
+            {
+                ErrorStatus = "Success",
+                ErrorCode = ErrorCode.Success,
+                Message = "Felicity.Api.Vendor",
+                Response = GetWeapons(db.WeaponSales.Where(x => x.IsAvailable).ToList())
+            };
+
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
+        });
+
+        group.MapGet("/getNightfallWeapon", (DbManager db) =>
+        {
+            var response = new ListResponse
+            {
+                ErrorStatus = "Success",
+                ErrorCode = ErrorCode.Success,
+                Message = "Felicity.Api.Vendor",
+                Response = GetWeapons(db.WeaponSales.Where(x =>
+                    x.VendorId == DefinitionHashes.Vendors.CommanderZavala_69482069 && x.ItemPerks == "[[0]]").ToList())
+            };
+
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
+        });
+
+        group.MapGet("/getTrialsWeapon", (DbManager db) =>
+        {
+            var response = new ListResponse
+            {
+                ErrorStatus = "Success",
+                ErrorCode = ErrorCode.Success,
+                Message = "Felicity.Api.Vendor",
+                Response = GetWeapons(db.WeaponSales.Where(x =>
+                    x.VendorId == DefinitionHashes.Vendors.Saint14 && x.ItemPerks == "[[0]]").ToList())
+            };
+
+            return TypedResults.Json(response, Common.JsonSerializerOptions);
+        });
     }
 
     private static List<object> GetWeapons(IEnumerable<WeaponSale> dbWeaponSales)
@@ -29,7 +71,6 @@ public static class VendorRoute
 
         // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var weaponSale in dbWeaponSales.OrderByDescending(x => x.QueryTime))
-        {
             weaponSales.Add(new WeaponSaleResponse
             {
                 IsAvailable = weaponSale.IsAvailable,
@@ -40,9 +81,7 @@ public static class VendorRoute
                 RequiredResets = weaponSale.RequiredResets,
                 VendorId = weaponSale.VendorId
             });
-        }
 
         return [weaponSales];
     }
 }
-

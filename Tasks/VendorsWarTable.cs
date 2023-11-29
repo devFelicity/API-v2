@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Tasks;
 
-public class VendorsGunsmith(
+public class VendorsWarTable(
     IServiceProvider services,
-    ILogger<VendorsGunsmith> logger,
+    ILogger<VendorsWarTable> logger,
     IBungieClient bungieClient)
     : BackgroundService
 {
-    private const string ServiceName = "VendorsGunsmith";
-    private const uint VendorId = DefinitionHashes.Vendors.Banshee44_672118013;
+    private const string ServiceName = "VendorsWarTable";
+    private const uint VendorId = DefinitionHashes.Vendors.WarTable;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -36,7 +36,7 @@ public class VendorsGunsmith(
             try
             {
                 var vendorUser = db.Users.Include(u => u.BungieProfiles)
-                    .FirstOrDefault(x => x.Id == UserExtensions.SignId(Variables.OwnerId));
+                    .FirstOrDefault(x => x.Id == UserExtensions.SignId(Variables.BotId));
 
                 if (vendorUser == null)
                 {
