@@ -70,9 +70,9 @@ public static class UserExtensions
             var refreshedUser = await bungieClient.Authorization.RenewToken(user.GetTokenData());
 
             user.OauthToken = refreshedUser.AccessToken;
-            user.TokenExpires = nowTime.AddSeconds(refreshedUser.ExpiresIn);
+            user.TokenExpires = nowTime + TimeSpan.FromSeconds(refreshedUser.ExpiresIn);
             user.RefreshToken = refreshedUser.RefreshToken;
-            user.RefreshExpires = nowTime.AddSeconds(refreshedUser.RefreshExpiresIn);
+            user.RefreshExpires = nowTime + TimeSpan.FromSeconds(refreshedUser.RefreshExpiresIn);
 
             if (user.DestinyMembershipId == 0) await user.UpdateMembership(bungieClient);
 

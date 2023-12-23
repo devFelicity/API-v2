@@ -57,19 +57,25 @@ public static class VendorTools
             if (existingWeapon is { IsAvailable: false })
                 continue;
 
+            var addWeapon = true;
+
             if (existingWeapon != null)
             {
                 if (existingWeapon.ItemPerks != vendorItem.ItemPerks)
+                {
                     existingWeapon.IsAvailable = false;
+                }
                 else
+                {
                     existingWeapon.QueryTime = queryTime;
+                    addWeapon = false;
+                }
 
                 db.WeaponSales.Update(existingWeapon);
             }
-            else
-            {
+
+            if (addWeapon)
                 db.WeaponSales.Add(vendorItem);
-            }
         }
 
         await db.SaveChangesAsync(stoppingToken);

@@ -4,9 +4,11 @@ using API.Services;
 using API.Util;
 using DotNetBungieAPI.Extensions;
 using DotNetBungieAPI.Models.Destiny;
+using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
 using DotNetBungieAPI.Service.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using static DotNetBungieAPI.HashReferences.DefinitionHashes;
+using UserExtensions = API.Util.UserExtensions;
 
 namespace API.Tasks;
 
@@ -34,6 +36,9 @@ public class VendorsAdepts(
                 await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(1), stoppingToken);
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
+
+            var nfAdept = string.Empty;
+            var trialsAdept = string.Empty;
 
             try
             {
@@ -120,6 +125,23 @@ public class VendorsAdepts(
                                 "FetchWeaponVendors", vendorWeapon);
 
                             db.WeaponSales.Add(vendorItem);
+
+                            var validDef = bungieClient.TryGetDefinition<DestinyInventoryItemDefinition>(
+                                vendorWeapon, out var adeptWeaponDef);
+
+                            switch (vendor.Key)
+                            {
+                                case Vendors.FocusedDecoding_502095006:
+                                    trialsAdept = validDef
+                                        ? adeptWeaponDef.DisplayProperties.Name
+                                        : "Unknown";
+                                    break;
+                                case Vendors.FocusedDecoding_2232145065:
+                                    nfAdept = validDef
+                                        ? adeptWeaponDef.DisplayProperties.Name
+                                        : "Unknown";
+                                    break;
+                            }
                         }
                         else
                         {
@@ -140,10 +162,23 @@ public class VendorsAdepts(
                             logger.LogInformation("[{service}]: No adept weapon found.", "FetchWeaponVendors");
 
                             db.WeaponSales.Add(vendorItem);
+
+                            switch (vendor.Value)
+                            {
+                                case Vendors.FocusedDecoding_502095006:
+                                    trialsAdept = "None";
+                                    break;
+                                case Vendors.FocusedDecoding_2232145065:
+                                    nfAdept = "None";
+                                    break;
+                            }
                         }
                     }
 
                     await db.SaveChangesAsync(stoppingToken);
+
+                    await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Vendors,
+                        $"**Trials Adept:** {trialsAdept}\n**Nightfall Adept:** {nfAdept}");
                 }
             }
             catch (Exception e)
@@ -154,7 +189,7 @@ public class VendorsAdepts(
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = false;
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).LastRun = DateTime.UtcNow;
 
-            await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(60), stoppingToken);
+            await bungieClient.ResetService.WaitForNextDailyReset(TimeSpan.FromMinutes(1), stoppingToken);
         }
     }
 }
