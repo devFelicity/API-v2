@@ -1,10 +1,6 @@
 ﻿using DotNetBungieAPI.Extensions;
-using DotNetBungieAPI.HashReferences;
 using DotNetBungieAPI.Models;
-using DotNetBungieAPI.Models.Destiny.Definitions.InventoryItems;
-using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.Destiny.Responses;
-using DotNetBungieAPI.Service.Abstractions;
 using static DotNetBungieAPI.HashReferences.DefinitionHashes.InventoryItems;
 
 namespace API.Util;
