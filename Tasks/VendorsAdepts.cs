@@ -37,8 +37,8 @@ public class VendorsAdepts(
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
 
-            var nfAdept = string.Empty;
-            var trialsAdept = string.Empty;
+            var nfAdept = "None";
+            var trialsAdept = "None";
 
             try
             {

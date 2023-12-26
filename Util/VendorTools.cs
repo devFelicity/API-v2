@@ -26,7 +26,10 @@ public static class VendorTools
             ], vendorProfile.GetTokenData(), stoppingToken);
 
         var queryTime = DateTime.UtcNow;
-        bungieClient.TryGetDefinition<DestinyVendorDefinition>(vendorId, out var vendor);
+        var vendorDefQuery = bungieClient.TryGetDefinition<DestinyVendorDefinition>(vendorId, out var vendor);
+
+        if(!vendorDefQuery)
+            return;
 
         foreach (var saleItemComponent in vendorQuery.Response.Sales.Data)
         {
