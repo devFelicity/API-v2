@@ -40,6 +40,8 @@ public class VendorsAdepts(
             var nfAdept = "None";
             var trialsAdept = "None";
 
+            var currentTime = DateTime.UtcNow;
+
             try
             {
                 var vendorUser = db.Users.Include(u => u.BungieProfiles)
@@ -112,12 +114,14 @@ public class VendorsAdepts(
                             if (existingItem != null)
                                 db.WeaponSales.Remove(existingItem);
 
+                            await db.SaveChangesAsync(stoppingToken);
+
                             var vendorItem = new WeaponSale
                             {
                                 IsAvailable = true,
                                 ItemId = vendorWeapon,
                                 ItemPerks = "[[0]]",
-                                QueryTime = DateTime.UtcNow,
+                                QueryTime = currentTime,
                                 VendorId = vendor.Value
                             };
 
@@ -133,12 +137,12 @@ public class VendorsAdepts(
                             {
                                 case Vendors.FocusedDecoding_502095006:
                                     trialsAdept = validDef
-                                        ? adeptWeaponDef.DisplayProperties.Name
+                                        ? $"[{adeptWeaponDef.DisplayProperties.Name}](https://d2foundry.gg/w/{adeptWeaponDef.Hash})"
                                         : "Unknown";
                                     break;
                                 case Vendors.FocusedDecoding_2232145065:
                                     nfAdept = validDef
-                                        ? adeptWeaponDef.DisplayProperties.Name
+                                        ? $"[{adeptWeaponDef.DisplayProperties.Name}](https://d2foundry.gg/w/{adeptWeaponDef.Hash})"
                                         : "Unknown";
                                     break;
                             }
@@ -150,12 +154,14 @@ public class VendorsAdepts(
                             if (existingItem != null)
                                 db.WeaponSales.Remove(existingItem);
 
+                            await db.SaveChangesAsync(stoppingToken);
+
                             var vendorItem = new WeaponSale
                             {
                                 IsAvailable = true,
                                 ItemId = 0,
                                 ItemPerks = "[[0]]",
-                                QueryTime = DateTime.UtcNow,
+                                QueryTime = currentTime,
                                 VendorId = vendor.Value
                             };
 
@@ -173,6 +179,16 @@ public class VendorsAdepts(
                                     break;
                             }
                         }
+                    }
+
+                    var oldWeapons = db.WeaponSales.Where(x => x.QueryTime < currentTime && x.ItemPerks == "[[0]]").ToList();
+
+                    foreach (var weaponSale in oldWeapons)
+                    {
+                        if(weaponSale.IsAvailable)
+                            weaponSale.IsAvailable = false;
+
+                        db.WeaponSales.Update(weaponSale);
                     }
 
                     await db.SaveChangesAsync(stoppingToken);
