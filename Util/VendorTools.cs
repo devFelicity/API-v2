@@ -55,36 +55,45 @@ public static class VendorTools
                 vendorItem.RequiredRank = Convert.ToInt32(failureString);
             }
 
-            var existingWeapon = db.WeaponSales.FirstOrDefault(x => x.ItemId == vendorItem.ItemId);
+            var existingWeapons = db.WeaponSales.Where(w => w.ItemId == vendorItem.Id && w.VendorId == vendorId).ToList();
 
-            if (existingWeapon is { IsAvailable: false })
-                continue;
-
-            var addWeapon = true;
-
-            if (existingWeapon != null)
+            if (existingWeapons.Count == 0)
             {
-                if (existingWeapon.ItemPerks != vendorItem.ItemPerks)
-                {
-                    existingWeapon.IsAvailable = false;
-                }
-                else
-                {
-                    existingWeapon.QueryTime = queryTime;
-                    addWeapon = false;
-                }
-
-                db.WeaponSales.Update(existingWeapon);
-            }
-
-            if (addWeapon)
+                // Case: Weapon isn't in the db, add it
                 db.WeaponSales.Add(vendorItem);
+            }
+            else
+            {
+                var addWeapon = true;
+
+                foreach (var existingWeapon in existingWeapons)
+                {
+                    if (existingWeapon.ItemPerks == vendorItem.ItemPerks)
+                    {
+                        // Case: Weapon is in the db with the same itemPerks, update querytime and isAvailable
+                        existingWeapon.QueryTime = queryTime;
+                        existingWeapon.IsAvailable = true;
+
+                        db.WeaponSales.Update(existingWeapon);
+                        addWeapon = false;
+                    }
+                    else
+                    {
+                        // Case: Weapon is in the db with different itemPerks, set isAvailable to false for each entry
+                        existingWeapon.IsAvailable = false;
+                        db.WeaponSales.Update(existingWeapon);
+                    }
+                }
+
+                if (addWeapon)
+                    db.WeaponSales.Add(vendorItem);
+            }
         }
 
         await db.SaveChangesAsync(stoppingToken);
 
         foreach (var sale in db.WeaponSales.Where(x => x.VendorId == vendorId))
-            if (sale.QueryTime < queryTime)
+            if (sale.QueryTime < queryTime && sale.ItemPerks != "[[0]]")
                 sale.IsAvailable = false;
 
         await db.SaveChangesAsync(stoppingToken);

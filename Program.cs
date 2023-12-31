@@ -118,7 +118,8 @@ public abstract class Program
                 .AddHostedService<VendorsGunsmith>()
                 .AddHostedService<VendorsIronBanner>()
                 .AddHostedService<VendorsTrials>()
-                .AddHostedService<VendorsWarTable>();
+                .AddHostedService<VendorsWarTable>()
+                ;
 
             builder.Services
                 .AddAuthentication(options =>
