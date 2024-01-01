@@ -51,7 +51,14 @@ public class VendorsGunsmith(
 
                 await db.SaveChangesAsync(stoppingToken);
 
-                await VendorTools.SingleVendorUpdate(bungieClient, db, vendorProfile, VendorId, 0, stoppingToken);
+                var done = false;
+                while(!done)
+                {
+                    done = await VendorTools.SingleVendorUpdate(bungieClient, db, vendorProfile, VendorId, 0, stoppingToken);
+
+                    if(!done)
+                        await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(10), stoppingToken);
+                }
             }
             catch (Exception e)
             {

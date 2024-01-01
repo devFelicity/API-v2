@@ -1,4 +1,5 @@
-﻿using API.Contexts;
+﻿using System.Diagnostics;
+using API.Contexts;
 using API.Contexts.Objects;
 using API.Services;
 using API.Util;
@@ -181,11 +182,12 @@ public class VendorsAdepts(
                         }
                     }
 
-                    var oldWeapons = db.WeaponSales.Where(x => x.QueryTime < currentTime && x.ItemPerks == "[[0]]").ToList();
+                    var oldWeapons = db.WeaponSales.Where(x => x.QueryTime < currentTime && x.ItemPerks == "[[0]]")
+                        .ToList();
 
                     foreach (var weaponSale in oldWeapons)
                     {
-                        if(weaponSale.IsAvailable)
+                        if (weaponSale.IsAvailable)
                             weaponSale.IsAvailable = false;
 
                         db.WeaponSales.Update(weaponSale);
@@ -193,8 +195,9 @@ public class VendorsAdepts(
 
                     await db.SaveChangesAsync(stoppingToken);
 
-                    await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Vendors,
-                        $"**Trials Adept:** {trialsAdept}\n**Nightfall Adept:** {nfAdept}");
+                    if (!Debugger.IsAttached)
+                        await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Vendors,
+                            $"**Trials Adept:** {trialsAdept}\n**Nightfall Adept:** {nfAdept}");
                 }
             }
             catch (Exception e)
