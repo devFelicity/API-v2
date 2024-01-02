@@ -20,7 +20,9 @@ public static class TaskRoute
                 response.Response.Add(new
                 {
                     task.Name,
-                    task.LastRun
+                    task.IsRunning,
+                    task.StartTime,
+                    task.EndTime
                 });
 
             return TypedResults.Json(response, Common.JsonSerializerOptions);

@@ -23,6 +23,7 @@ public class UserRefresh(
         while (!stoppingToken.IsCancellationRequested)
         {
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).StartTime = DateTime.UtcNow;
 
             try
             {
@@ -144,7 +145,7 @@ public class UserRefresh(
             }
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = false;
-            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).LastRun = DateTime.UtcNow;
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).EndTime = DateTime.UtcNow;
 
             await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(60), stoppingToken);
         }
