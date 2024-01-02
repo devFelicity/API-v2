@@ -19,11 +19,6 @@ public class VendorsTrials(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = services.CreateScope();
-        var db =
-            scope.ServiceProvider
-                .GetRequiredService<DbManager>();
-
         // TODO: raise this to 5/10 minutes
         await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(2), stoppingToken);
 
@@ -36,6 +31,11 @@ public class VendorsTrials(
 
             try
             {
+                using var scope = services.CreateScope();
+                var db =
+                    scope.ServiceProvider
+                        .GetRequiredService<DbManager>();
+
                 var userList = new List<VendorUser?>
                 {
                     db.VendorUsers.FirstOrDefault(x => x.VendorId == VendorId && x.Resets == 0 && x.Rank < 10),

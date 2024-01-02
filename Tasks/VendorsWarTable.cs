@@ -18,11 +18,6 @@ public class VendorsWarTable(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = services.CreateScope();
-        var db =
-            scope.ServiceProvider
-                .GetRequiredService<DbManager>();
-
         // TODO: raise this to 5/10 minutes
         await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(2), stoppingToken);
 
@@ -35,6 +30,11 @@ public class VendorsWarTable(
 
             try
             {
+                using var scope = services.CreateScope();
+                var db =
+                    scope.ServiceProvider
+                        .GetRequiredService<DbManager>();
+
                 var vendorUser = db.Users.Include(u => u.BungieProfiles)
                     .FirstOrDefault(x => x.Id == UserExtensions.SignId(Variables.BotId));
 

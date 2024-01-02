@@ -18,4 +18,9 @@ public static class DateTimeExtensions
 
         return nextRoundTime;
     }
+
+    public static long GetCurrentTimestamp()
+    {
+        return DateTimeOffset.Now.ToUnixTimeSeconds();
+    }
 }
