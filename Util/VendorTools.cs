@@ -5,12 +5,15 @@ using API.Services;
 using DotNetBungieAPI.Extensions;
 using DotNetBungieAPI.Models.Destiny;
 using DotNetBungieAPI.Models.Destiny.Definitions.Vendors;
+using DotNetBungieAPI.Models.Exceptions;
 using DotNetBungieAPI.Service.Abstractions;
 
 namespace API.Util;
 
 public static class VendorTools
 {
+    private const string ServiceName = "VendorTools";
+
     public static async Task<bool> SingleVendorUpdate(
         IBungieClient bungieClient,
         DbManager db,
@@ -105,11 +108,22 @@ public static class VendorTools
 
             success = true;
         }
+        catch (BungieHtmlResponseErrorException e)
+        {
+            logger.LogError(e, "Exception in {service}", ServiceName);
+
+            var fileName = $"Logs/bungie-error-{DateTimeExtensions.GetCurrentTimestamp()}.html";
+
+            await File.WriteAllTextAsync(fileName, e.Html, stoppingToken);
+
+            await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
+                $"Exception in {ServiceName}:\n\n>>> {e.GetType()}: Logs saved to {fileName}");
+        }
         catch (Exception e)
         {
             await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
                 $"**Exception in SingleVendorUpdate({vendorId}).**\n\n>>> **{e.GetType()}**: {e.Message}");
-            logger.LogError(e, "Exception in {service}", "SingleVendorUpdate");
+            logger.LogError(e, "Exception in {service}", ServiceName);
         }
 
         return success;

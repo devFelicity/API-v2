@@ -4,6 +4,7 @@ using API.Services;
 using API.Util;
 using DotNetBungieAPI.HashReferences;
 using DotNetBungieAPI.Models.Destiny;
+using DotNetBungieAPI.Models.Exceptions;
 using DotNetBungieAPI.Service.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,17 +20,17 @@ public class UserRefresh(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = services.CreateScope();
-        var db =
-            scope.ServiceProvider
-                .GetRequiredService<DbManager>();
-
         while (!stoppingToken.IsCancellationRequested)
         {
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
 
             try
             {
+                using var scope = services.CreateScope();
+                var db =
+                    scope.ServiceProvider
+                        .GetRequiredService<DbManager>();
+
                 var users = await db.Users.Include(u => u.BungieProfiles).ToListAsync(stoppingToken);
                 var bungieProfiles = users.SelectMany(u => u.BungieProfiles)
                     // TODO: .Where(u => u.NeverExpire)
@@ -123,9 +124,23 @@ public class UserRefresh(
 
                 await db.SaveChangesAsync(stoppingToken);
             }
+            catch (BungieHtmlResponseErrorException e)
+            {
+                logger.LogError(e, "Exception in {service}", ServiceName);
+
+                var fileName = $"Logs/bungie-error-{DateTimeExtensions.GetCurrentTimestamp()}.html";
+
+                await File.WriteAllTextAsync(fileName, e.Html, stoppingToken);
+
+                await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
+                    $"Exception in {ServiceName}:\n\n>>> {e.GetType()}: Logs saved to {fileName}");
+            }
             catch (Exception e)
             {
                 logger.LogError(e, "Exception in {service}", ServiceName);
+
+                await DiscordTools.SendMessage(DiscordTools.WebhookChannel.Logs,
+                    $"Exception in {ServiceName}:\n\n>>> {e.GetType()}: {e.Message}");
             }
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = false;
