@@ -32,6 +32,7 @@ public class VendorsAdepts(
                 await Task.Delay(DateTimeExtensions.GetRoundTimeSpan(1), stoppingToken);
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = true;
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).StartTime = DateTime.UtcNow;
 
             var nfAdept = "None";
             var trialsAdept = "None";
@@ -206,7 +207,7 @@ public class VendorsAdepts(
             }
 
             TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).IsRunning = false;
-            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).LastRun = DateTime.UtcNow;
+            TaskSchedulerService.Tasks.First(t => t.Name == ServiceName).EndTime = DateTime.UtcNow;
 
             await bungieClient.ResetService.WaitForNextDailyReset(TimeSpan.FromMinutes(1), stoppingToken);
         }

@@ -14,17 +14,17 @@ public class SchedulerService(
         try
         {
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "UserRefresh", IsRunning = false, LastRun = null });
+                { Name = "UserRefresh", IsRunning = false });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsAdepts", IsRunning = false, LastRun = null });
+                { Name = "VendorsAdepts", IsRunning = false });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsGunsmith", IsRunning = false, LastRun = null });
+                { Name = "VendorsGunsmith", IsRunning = false });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsIronBanner", IsRunning = false, LastRun = null });
+                { Name = "VendorsIronBanner", IsRunning = false });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsTrials", IsRunning = false, LastRun = null });
+                { Name = "VendorsTrials", IsRunning = false });
             TaskSchedulerService.Tasks.Add(new ScheduledTask
-                { Name = "VendorsWarTable", IsRunning = false, LastRun = null });
+                { Name = "VendorsWarTable", IsRunning = false });
         }
         catch (Exception e)
         {
@@ -44,5 +44,6 @@ public class ScheduledTask
 {
     public string Name { get; init; } = "Unknown Task";
     public bool IsRunning { get; set; }
-    public DateTime? LastRun { get; set; }
+    public DateTime? StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
 }
