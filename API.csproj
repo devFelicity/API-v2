@@ -26,7 +26,7 @@
     <PackageReference Include="DotNetBungieAPI" Version="2.12.3" />
     <PackageReference Include="DotNetBungieAPI.AspNet.Security.OAuth.Providers" Version="1.0.2" />
     <PackageReference Include="DotNetBungieAPI.DefinitionProvider.Sqlite" Version="1.5.4" />
-    <PackageReference Include="DotNetBungieAPI.HashReferences" Version="1.22.1" />
+    <PackageReference Include="DotNetBungieAPI.HashReferences" Version="1.25.0" />
     <PackageReference Include="DotNetBungieAPI.Models" Version="2.11.4" />
     <PackageReference Include="DotNetBungieAPI.Service.Abstractions" Version="2.11.2" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.0" />
